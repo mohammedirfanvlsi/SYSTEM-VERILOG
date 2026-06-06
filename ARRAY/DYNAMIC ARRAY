@@ -1,0 +1,57 @@
+module dynamic_array;
+  
+  logic[7:0]array_1d[];
+  
+  logic[7:0]array_2d[][];
+  
+  logic[7:0]array_3d[][][];
+  
+  initial begin
+    
+    array_1d = new[5];
+    
+    array_1d = '{1,2,3,4,5};
+    
+    array_2d = new[3];
+    
+    foreach(array_2d[i])
+      
+      array_2d[i] = new[5];
+    
+    foreach(array_2d[i,j])
+    
+    
+      array_2d[i][j] = $random;
+      
+    
+    
+    array_3d = new[3];
+    
+    foreach(array_3d[i])
+      
+      array_3d[i] = new [3];
+    
+    foreach(array_3d[i,j])
+      
+      array_3d[i][j] = new [3];
+    
+    foreach(array_3d[i,j,k])
+      
+      array_3d[i][j][k] = $random;
+      
+    
+    $display("the value of array_1d is %p",array_1d);
+    $display("the value of array_2d is %p",array_2d);
+    $display("the value of array_3d is %p",array_3d);
+    
+    
+  end
+endmodule
+
+/*OUTPUT 
+
+# KERNEL: the value of array_1d is '{1, 2, 3, 4, 5}
+# KERNEL: the value of array_2d is '{'{36, 129, 9, 99, 13}, '{141, 101, 18, 1, 13}, '{118, 61, 237, 140, 249}}
+# KERNEL: the value of array_3d is '{'{'{198, 197, 170}, '{229, 119, 18}, '{143, 242, 206}}, '{'{232, 197, 92}, '{189, 45, 101}, '{99, 10, 128}}, '{'{32, 170, 157}, '{150, 19, 13}, '{83, 107, 213}}}
+*/
+   
