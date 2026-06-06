@@ -1,11 +1,11 @@
 module four_state;
 
-reg r;
-wire w;
-logic l;
-integer i;
-time t;
-real f;
+ reg     r;          // old-style 4-state variable
+  wire    w;          // 4-state net
+  logic   l;          // modern 4-state variable
+  integer i;          // 32-bit signed 4-state
+  time    t;          // 64-bit unsigned 4-state
+  real    f;          // real number (2-state but included)
 
 assign w = 1;
 
