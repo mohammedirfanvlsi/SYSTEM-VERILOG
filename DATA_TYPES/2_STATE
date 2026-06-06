@@ -1,0 +1,43 @@
+module two_state;
+  
+  bit      b;    // 1-bit, unsigned, 2-state
+  byte     by;   // 8-bit, signed,   2-state
+  shortint si;   // 16-bit, signed,  2-state
+  int      i;    // 32-bit, signed,  2-state
+  longint  li;   // 64-bit, signed,  2-state
+ 
+  initial begin
+  
+  b = 1'b0;
+  by = 8'b1;
+  s = -14;
+  i = 32'd30;
+  li = 64'd62;
+  
+  #5;
+  
+  
+  b = $random;
+  by = $random;
+  s = $random;
+  i = $random;
+  li = $random;
+    
+    $display ("the value of b is %0d",b);
+    $display ("the value of by is %0d",by);
+    $display ("the value of s is %0d",s);
+    $display ("the value of i is %0d",i);
+    $display ("the value of li is %0d",li);
+    
+  end
+endmodule
+        
+/* OUTPUT 
+
+# KERNEL: the value of b is 0
+# KERNEL: the value of by is -127
+# KERNEL: the value of s is -10743
+# KERNEL: the value of i is -1309649309
+# KERNEL: the value of li is 112818957
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.*/
