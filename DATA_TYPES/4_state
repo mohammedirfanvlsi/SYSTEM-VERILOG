@@ -1,0 +1,50 @@
+module four_state;
+
+reg r;
+wire w;
+logic l;
+integer i;
+time t;
+real f;
+
+assign w = 1;
+
+initial begin
+  
+  r = 1'b0;
+  l = 1'b1;
+  i = 10;
+  t = $time;
+  f = 2.4;
+  
+  #10;
+  
+  r = 1'b1;
+  l = 1'bz;
+  i = -63;
+  t = $time;
+  f = 3.5;
+  
+  #5;
+  
+  $display("the value of r is %0d",r);
+  $display("the value of w is %0d",w);
+  $display("the value of l is %0d",l);
+  $display("the value of i is %0d",i);
+  $display("the value of t is %0t",t);
+  $display("the value of f is %0f",f);
+end 
+  
+endmodule
+  
+// output 
+
+/*# KERNEL: the value of r is 1
+# KERNEL: the value of w is 1
+# KERNEL: the value of l is z
+# KERNEL: the value of i is -63
+# KERNEL: the value of t is 10
+# KERNEL: the value of f is 3.500000
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.*/
+  
