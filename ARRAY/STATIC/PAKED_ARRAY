@@ -1,0 +1,43 @@
+module static_packed_array;
+  
+  logic [7:0]array_1d;
+  
+  
+  logic [3:0][7:0]array_2d;
+  
+  //logic [3:0][7:0]
+  // [7:0] → 8 bits
+  // [3:0] → 4 elements
+  
+  
+  logic [1:0][3:0][7:0]array_3d;
+  
+  // [7:0] → 8 bits
+  // [3:0] → 4 elements
+  // [1:0] → 2 elements
+  
+  initial begin
+    
+    array_1d = 8'h13;
+    
+    
+    array_2d = $random;
+    
+    array_3d = '{
+      {8'h12,8'h34,8'h56,8'h78},
+      '{8'h9a,8'hbc,8'hde,8'hff}};
+    
+    $display("the value of array_1d is %b",array_1d);
+    $display("the value of array_2d is %b",array_2d);
+    $display("the value of array_3d is %b",array_3d);
+    
+  end
+endmodule
+    
+/* OUTPUT 
+
+# KERNEL: the value of array_1d is 00010011
+# KERNEL: the value of array_2d is 00010010000101010011010100100100
+# KERNEL: the value of array_3d is 0001001000110100010101100111100010011010101111001101111011111111*/
+    
+  
