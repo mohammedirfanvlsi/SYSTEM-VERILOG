@@ -37,7 +37,7 @@ end
   
 endmodule
   
-// output 
+// OUTPUT
 
 /*# KERNEL: the value of r is 1
 # KERNEL: the value of w is 1
