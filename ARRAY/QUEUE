@@ -1,0 +1,59 @@
+module queue_array;
+  
+  logic[7:0] array_1d[$];
+  
+  logic[7:0]array_2d[$][$];
+  
+                        
+  logic[7:0]array_3d[$][$][$];
+  
+  initial begin
+    
+    array_1d.push_back(8'h10);
+    array_1d.push_front(10);
+    
+    array_2d.push_back('{});
+    array_2d.push_front('{});
+    
+    foreach(array_2d[i])begin
+      
+      array_2d[i].push_back(20);
+      array_2d[i].push_front(30);
+      
+    end
+    
+    array_3d.push_front('{});
+     array_3d.push_back('{});
+    
+    foreach(array_3d[i])begin
+    
+      array_3d[i].push_front('{});
+      array_3d[i].push_back('{});
+      
+    end
+   
+    foreach(array_3d[i,j])begin
+      
+      array_3d[i][j].push_front(10);
+      array_3d[i][j].push_back(40);
+      
+    end
+    
+    $display("the value of array_1d is %p",array_1d);
+    $display("the value of array_2d is %p",array_2d);
+    $display("the value of array_3d is %p",array_3d);
+    
+  end
+  
+endmodule
+    
+
+/* OUTPUT 
+
+# KERNEL: the value of array_1d is '{10, 16}
+# KERNEL: the value of array_2d is '{'{30, 20}, '{30, 20}}
+# KERNEL: the value of array_3d is '{'{'{10, 40}, '{10, 40}}, '{'{10, 40}, '{10, 40}}}*/
+      
+    
+    
+    
