@@ -1,0 +1,63 @@
+module string_demo;
+  
+  string s1;
+  string s2;
+  string s3;
+  
+  int num;
+  
+  initial begin
+  
+  s1 = "system";
+  s2 = "verilog";
+  
+  $display("s1 = %s",s1);
+  $display("s2 = %s",s2);
+  
+  $display("length of s1 = %d",s1.len());
+  
+  s3 = {s1,s2};
+  
+  $display("concatination string = %s",s3);
+  
+  $display("first character of s1 = %c",s1.getc(0));
+  
+  s1.putc(0,"S");
+  $display("modified s1 = %s",s1);
+  
+  s3 = s1.substr(0,5);
+  $display("substring of s1 = %s",s3);
+  
+  $display("uppercase of  = %s",s1.toupper());
+  $display("lowercase of  = %s",s1.tolower());
+  
+    if(s1.compare("System") == 0)
+    $display("strings are equal" );
+   else   
+     $display("strings are not equal");
+           
+   s3 = "1234";
+   num = s3.atoi();
+   $display("sting to int = %d",num);
+           
+    s3.itoa(1234);
+    $display("int to string = %s",s3);
+            
+  end
+            
+ endmodule          
+ 
+/* OUTPUT 
+
+# KERNEL: s1 = system
+# KERNEL: s2 = verilog
+# KERNEL: length of s1 =           6
+# KERNEL: concatination string = systemverilog
+# KERNEL: first character of s1 = s
+# KERNEL: modified s1 = System
+# KERNEL: substring of s1 = System
+# KERNEL: uppercase of  = SYSTEM
+# KERNEL: lowercase of  = system
+# KERNEL: strings are equal
+# KERNEL: sting to int =        1234
+# KERNEL: int to string = 1234 */
