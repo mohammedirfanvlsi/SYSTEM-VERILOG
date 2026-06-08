@@ -1,0 +1,40 @@
+module array_manipulation_method;
+  
+  int arr[] = '{5,10,15,10,20};
+  
+  int a;
+  
+  initial begin
+  
+   //ORDERING METHODS
+  
+  arr.sort();// ascending 
+    
+  arr.reverse(); //reverse 
+ 
+   a = arr.sum(); // sum
+  
+    $display("the sum of array is %p",a);
+    a = arr.product(); // product 
+    $display("the product of array is %p",a);
+    $display("the valuve of sort  is %p",arr);
+    arr.rsort();//descending
+    $display("the valuve of rsort  is %p",arr);
+    $display("the valuve of reverse  is %p",arr);   
+    
+    $display("the valuve of min  is %p",arr.min()); 
+    $display("the valuve of sort  is %p",arr.max());    
+    
+ end
+  
+endmodule
+  
+/* OUTPUT 
+
+KERNEL: the sum of array is 60
+# KERNEL: the product of array is 150000
+# KERNEL: the valuve of sort  is '{20, 15, 10, 10, 5}
+# KERNEL: the valuve of rsort  is '{20, 15, 10, 10, 5}
+# KERNEL: the valuve of reverse  is '{20, 15, 10, 10, 5}
+# KERNEL: the valuve of min  is '{5}
+# KERNEL: the valuve of sort  is '{20} */
