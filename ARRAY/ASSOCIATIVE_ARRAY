@@ -1,0 +1,41 @@
+module associative_array;
+  
+  logic [7:0]array_1d[string];
+  
+  logic [7:0]array_2d[int][int];
+  
+  real array_3d[*][*][*];
+  
+  
+  initial begin
+    
+    array_1d["first"] = 10;
+    array_1d["second"] = 8'h10;
+    array_1d["last"] = 5;
+    
+    array_2d[0][0] = 30;
+    array_2d[4][0] = 40;
+    array_2d[3][1] = 50;
+    
+    
+    array_3d[0][0][0] = 2.20;
+    array_3d[1][2][3] = 4.43;
+    array_3d[3][3][3] = 8.89;
+    
+    $display("the value of 1D_rray is %p",array_1d);
+    $display("the value of 2D_rray is %p",array_2d);
+    $display("the value of 3D_rray is %p",array_3d);
+    
+    $display("the size of 1D = %p,2D = %p 3D =%p",array_1d.size(),array_2d.size(),array_3d.size());
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+KERNEL: the value of 1D_rray is '{"first":10, "last":5, "second":16}
+# KERNEL: the value of 2D_rray is '{0:'{0:30}, 3:'{1:50}, 4:'{0:40}}
+# KERNEL: the value of 3D_rray is '{0:'{0:'{0:2.2}}, 1:'{2:'{3:4.43}}, 3:'{3:'{3:8.890000000000001}}}
+# KERNEL: the size of 1D = 3,2D = 3 3D =3 */
+
+    
