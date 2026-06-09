@@ -1,0 +1,32 @@
+module enum_data_type;
+  
+  typedef enum {GREEN = 2,YELLOW,RED,BLUE,WHITE}colours;
+  
+  colours c;
+  
+  initial begin
+    
+    c = YELLOW;
+    
+    $display("colour.first() = %0d",c.first());
+    $display("colour.last() = %0d",c.last());
+    $display("colour.next() = %0d",c.next());
+    $display("colour.first() = %0d",c.first());
+    $display("colour.prev() = %0d",c.prev());
+    $display("colour.num() = %0d",c.num());
+    $display("colour.name() = %s",c.name());
+    
+  end
+endmodule
+    
+/* OUTPUT 
+
+# KERNEL: colour.first() = 2
+# KERNEL: colour.last() = 6
+# KERNEL: colour.next() = 4
+# KERNEL: colour.first() = 2
+# KERNEL: colour.prev() = 2
+# KERNEL: colour.num() = 5
+# KERNEL: colour.name() = YELLOW */
+
+    
