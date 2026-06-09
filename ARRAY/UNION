@@ -1,0 +1,60 @@
+module union_demo;
+
+  // Packed union (most common)
+  typedef union packed {
+    int        i;      // 32-bit integer
+    logic [31:0] bits; // same 32 bits
+  } data_u;
+
+  data_u d;
+   
+   typedef union {
+     
+     int i;
+     real r;
+   }u;
+   
+   u p;
+
+  initial begin
+
+    // Write as integer
+    d.i = 32'd10;
+    $display("Written as int:");
+    $display("i = %0d", d.i);
+    $display("bits = %0h", d.bits);
+
+    // Write as bits
+    d.bits = 32'hA5A5_FF00;
+    $display("Written as bits:");
+     $display("bits = %0h", d.bits);
+    $display("i = %0d", d.i);
+   
+    
+    
+    p.i = 25;
+    $display("\nUNPACKED UNION:");
+    $display("written as int -> i=%0d", p.i);
+    $display("written as real -> r=%0d", p.r);
+    
+    p.r = 3.14; // overwrites int
+    $display("written as real -> r=%0f", p.r);
+    $display("written as int -> i=%0d", p.i);
+
+  end
+endmodule
+
+/* OUTPUT 
+
+Written as int:
+# i = 10
+# bits = a
+# Written as bits:
+# bits = a5a5ff00
+# i = -1515847936
+# 
+# UNPACKED UNION:
+# written as int -> i=25
+# written as real -> r=0
+# written as real -> r=3.140000
+# written as int -> i=1374389535 */
