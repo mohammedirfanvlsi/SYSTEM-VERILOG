@@ -1,0 +1,102 @@
+module control_flow_demo;
+
+  int a = 10;
+  int b = 5;
+  int i;
+  int sel = 2;
+
+  initial begin
+
+    // -------------------------------------------------
+    //  SIMPLE IF
+    // -------------------------------------------------
+    if (a > b)
+      $display("IF: a is greater than b");
+
+    // -------------------------------------------------
+    //  IF-ELSE
+    // -------------------------------------------------
+    if (a < b)
+      $display("IF-ELSE: a is less than b");
+    else
+      $display("IF-ELSE: a is NOT less than b");
+
+    // -------------------------------------------------
+    //  IF-ELSE LADDER
+    // -------------------------------------------------
+    if (a == 0)
+      $display("LADDER: a is zero");
+    else if (a < 10)
+      $display("LADDER: a is less than 10");
+    else if (a == 10)
+      $display("LADDER: a is exactly 10");
+    else
+      $display("LADDER: a is greater than 10");
+
+    // -------------------------------------------------
+    //  UNIQUE IF (exactly ONE must be true)
+    // -------------------------------------------------
+    unique if (a == 5)
+      $display("UNIQUE IF: a is 5");
+    else if (a == 10)
+      $display("UNIQUE IF: a is 10");
+    else if (a == 10)
+      $display("UNIQUE IF: a is 10");
+
+    // -------------------------------------------------
+    //  UNIQUE0 IF (zero or one condition allowed)
+    // -------------------------------------------------
+    unique0 if (a == 20)
+      $display("UNIQUE0 IF: a is 20");
+    else if (a == 30)
+      $display("UNIQUE0 IF: a is 30");
+
+    // -------------------------------------------------
+    //  PRIORITY IF (top condition has highest priority)
+    // -------------------------------------------------
+    priority if (a > 0)
+      $display("PRIORITY IF: a is positive");
+    else if (a > 5)
+      $display("PRIORITY IF: a is greater than 5");
+
+    // -------------------------------------------------
+    //  CASE STATEMENT
+    // -------------------------------------------------
+    case (sel)
+      0: $display("CASE: sel = 0");
+      1: $display("CASE: sel = 1");
+      2: $display("CASE: sel = 2");
+      default: $display("CASE: default case");
+    endcase
+
+    // -------------------------------------------------
+    //  LOOP WITH CONTINUE AND BREAK
+    // -------------------------------------------------
+    for (i = 0; i < 10; i++) begin
+
+      if (i == 2)
+        continue; // skip when i = 2
+
+      if (i == 7)
+        break;    // exit loop when i = 7
+
+      $display("LOOP: i = %0d", i);
+    end
+
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: IF: a is greater than b
+# KERNEL: IF-ELSE: a is NOT less than b
+# KERNEL: LADDER: a is exactly 10
+# KERNEL: UNIQUE IF: a is 10
+# KERNEL: PRIORITY IF: a is positive
+# KERNEL: CASE: sel = 2
+# KERNEL: LOOP: i = 0
+# KERNEL: LOOP: i = 1
+# KERNEL: LOOP: i = 3
+# KERNEL: LOOP: i = 4
+# KERNEL: LOOP: i = 5
+# KERNEL: LOOP: i = 6 */
