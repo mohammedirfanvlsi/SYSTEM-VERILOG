@@ -1,0 +1,39 @@
+module casez_casex;
+  
+  logic[3:0] data;
+  
+  initial begin 
+    
+    // CASEZ EXAMPLE
+    // z and ? are treated as DON'T CARE
+    
+    data = 4'b10z1;
+    
+    casez(data)
+      
+      4'b10?1: $display("casez :matched 10?1");
+      4'b1z01: $display("casez :matched 1z01");
+      default: $display("CASEZ: no match");
+    endcase
+    
+    
+     // x, z, and ? are treated as DON'T CARE
+    // CASEX EXAMPLE
+    
+    data = 4'b1x01;
+    
+    casex(data)
+      
+    4'b1001:$display("casex :matched 1001");
+    4'b1x01:$display("casex :matched 1x01");
+    default: $display("CASEx: no match");
+    endcase
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: casez :matched 10?1
+# KERNEL: casex :matched 1001 */
+    
