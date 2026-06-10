@@ -1,0 +1,176 @@
+module operators_demo;
+
+  int a = 10;
+  int b = 3;
+  logic [3:0] x = 4'b1010;
+  logic [3:0] y = 4'b1100;
+  logic result;
+
+  int arith;
+  logic [7:0] concat;
+  logic [3:0] shift;
+
+  initial begin
+
+    // ===============================
+    // 1️⃣ ARITHMETIC OPERATORS
+    // ===============================
+    arith = a + b;   // addition (numeric)
+    $display("ARITHMETIC OUTPUT");
+    $display("a + b = %0d", arith);
+
+    arith = a * b;   // multiplication
+    $display("a * b = %0d", arith);
+
+    arith = a % b;   // modulus
+    $display("a %% b = %0d", arith);
+
+    // ===============================
+    // 2️⃣ RELATIONAL OPERATORS
+    // ===============================
+    result = (a > b);  // compares values
+    $display("RELATIONAL OUTPUT");
+    $display("a > b = %0b", result);
+
+    // ===============================
+    // 3️⃣ EQUALITY OPERATORS
+    // ===============================
+    result = (x == y);   // logical equality
+    $display("EQUALITY OUTPUT");
+    $display("x == y = %0b", result);
+
+    result = (x === y);  // case equality (checks X/Z)
+    $display("x === y = %0b", result);
+
+    // ===============================
+    // 4️⃣ LOGICAL OPERATORS
+    // ===============================
+    result = (a && b);   // logical AND (true/false)
+    $display("LOGICAL OUTPUT");
+    $display("a && b = %0b", result);
+
+    result = !(a > b);  // logical NOT
+    $display("!(a > b) = %0b", result);
+
+    // ===============================
+    // 5️⃣ BITWISE OPERATORS (BIT-BY-BIT)
+    // ===============================
+    $display("BITWISE OUTPUT");
+    $display("x & y  = %b", x & y);  // AND each bit
+    $display("x | y  = %b", x | y);  // OR each bit
+    $display("x ^ y  = %b", x ^ y);  // XOR each bit
+    $display("~x     = %b", ~x);     // NOT each bit
+
+    // ===============================
+    // 6️⃣ SHIFT OPERATORS
+    // ===============================
+    shift = x << 1;  // left shift (fill with 0)
+    $display("SHIFT OUTPUT");
+    $display("x << 1 = %b", shift);
+
+    shift = x >> 1;  // right shift
+    $display("x >> 1 = %b", shift);
+
+    // ===============================
+    // 7️⃣ CONDITIONAL OPERATOR
+    // ===============================
+    $display("CONDITIONAL OUTPUT");
+    arith = (a > b) ? a : b;  // selects value
+    $display("Conditional result = %0d", arith);
+
+    // ===============================
+    // 8️⃣ REDUCTION OPERATORS
+    // ===============================
+    $display("REDUCTION OUTPUT");
+    result = &x;  // AND all bits → 1 bit
+    $display("&x (reduction AND) = %0b", result);
+
+    result = |x;  // OR all bits
+    $display("|x (reduction OR)  = %0b", result);
+
+    result = ^x;  // XOR all bits
+    $display("^x (reduction XOR) = %0b", result);
+
+    // ===============================
+    // 9️⃣ CONCATENATION & REPLICATION
+    // ===============================
+    concat = {x, y};      // concatenate vectors
+    $display("CONCATENATION OUTPUT");
+    $display("Concatenation {x,y} = %b", concat);
+
+    concat = {2{x}};     // replicate x twice
+    $display("Replication {2{x}} = %b", concat);
+
+    // ===============================
+    // 🔟 LOGICAL IMPLICATION & EQUIVALENCE
+    // ===============================
+    result = (a > b) -> (x != y);   // implication
+    $display("IMPLICATION OUTPUT");
+    $display("(a>b) -> (x!=y) = %0b", result);
+
+    result = (a > b) <-> (x != y);  // equivalence
+    $display("(a>b) <-> (x!=y) = %0b", result);
+
+    // ===============================
+    // 🔹 EXTRA OPERATORS (MISSED ONES)
+    // ===============================
+
+    // Increment / Decrement
+    a++;
+    $display("INCREMENT OUTPUT");
+    $display("a++ = %0d", a);
+
+    // inside operator
+    result = a inside {[10:20]};
+    $display("INSIDE OUTPUT");
+    $display("a inside [10:20] = %0b", result);
+
+    // Streaming operator (bit reordering)
+    concat = {<<{y}};  // stream bits left
+    $display("STREAMING OUTPUT");
+    $display("Streaming {<<{y}} = %b", concat);
+
+  end
+
+endmodule
+
+/* OUTPUT
+
+# KERNEL: ARITHMETIC OUTPUT
+# KERNEL: a + b = 13
+# KERNEL: a * b = 30
+# KERNEL: a % b = 1
+# KERNEL: RELATIONAL OUTPUT
+# KERNEL: a > b = 1
+# KERNEL: EQUALITY OUTPUT
+# KERNEL: x == y = 0
+# KERNEL: x === y = 0
+# KERNEL: LOGICAL OUTPUT
+# KERNEL: a && b = 1
+# KERNEL: !(a > b) = 0
+# KERNEL: BITWISE OUTPUT
+# KERNEL: x & y  = 1000
+# KERNEL: x | y  = 1110
+# KERNEL: x ^ y  = 0110
+# KERNEL: ~x     = 0101
+# KERNEL: SHIFT OUTPUT
+# KERNEL: x << 1 = 0100
+# KERNEL: x >> 1 = 0101
+# KERNEL: CONDITIONAL OUTPUT
+# KERNEL: Conditional result = 10
+# KERNEL: REDUCTION OUTPUT
+# KERNEL: &x (reduction AND) = 0
+# KERNEL: |x (reduction OR)  = 1
+# KERNEL: ^x (reduction XOR) = 0
+# KERNEL: CONCATENATION OUTPUT
+# KERNEL: Concatenation {x,y} = 10101100
+# KERNEL: Replication {2{x}} = 10101010
+# KERNEL: IMPLICATION OUTPUT
+# KERNEL: (a>b) -> (x!=y) = 1
+# KERNEL: (a>b) <-> (x!=y) = 1
+# KERNEL: INCREMENT OUTPUT
+# KERNEL: a++ = 11
+# KERNEL: INSIDE OUTPUT
+# KERNEL: a inside [10:20] = 1
+# KERNEL: STREAMING OUTPUT
+# KERNEL: Streaming {<<{y}} = 00110000 */
