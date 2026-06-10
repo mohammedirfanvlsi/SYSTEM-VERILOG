@@ -13,7 +13,7 @@ module operators_demo;
   initial begin
 
     // ===============================
-    // 1️⃣ ARITHMETIC OPERATORS
+    //  ARITHMETIC OPERATORS
     // ===============================
     arith = a + b;   // addition (numeric)
     $display("ARITHMETIC OUTPUT");
@@ -26,14 +26,14 @@ module operators_demo;
     $display("a %% b = %0d", arith);
 
     // ===============================
-    // 2️⃣ RELATIONAL OPERATORS
+    //  RELATIONAL OPERATORS
     // ===============================
     result = (a > b);  // compares values
     $display("RELATIONAL OUTPUT");
     $display("a > b = %0b", result);
 
     // ===============================
-    // 3️⃣ EQUALITY OPERATORS
+    //  EQUALITY OPERATORS
     // ===============================
     result = (x == y);   // logical equality
     $display("EQUALITY OUTPUT");
@@ -43,7 +43,7 @@ module operators_demo;
     $display("x === y = %0b", result);
 
     // ===============================
-    // 4️⃣ LOGICAL OPERATORS
+    //  LOGICAL OPERATORS
     // ===============================
     result = (a && b);   // logical AND (true/false)
     $display("LOGICAL OUTPUT");
@@ -53,7 +53,7 @@ module operators_demo;
     $display("!(a > b) = %0b", result);
 
     // ===============================
-    // 5️⃣ BITWISE OPERATORS (BIT-BY-BIT)
+    //  BITWISE OPERATORS (BIT-BY-BIT)
     // ===============================
     $display("BITWISE OUTPUT");
     $display("x & y  = %b", x & y);  // AND each bit
@@ -62,7 +62,7 @@ module operators_demo;
     $display("~x     = %b", ~x);     // NOT each bit
 
     // ===============================
-    // 6️⃣ SHIFT OPERATORS
+    //  SHIFT OPERATORS
     // ===============================
     shift = x << 1;  // left shift (fill with 0)
     $display("SHIFT OUTPUT");
@@ -72,14 +72,14 @@ module operators_demo;
     $display("x >> 1 = %b", shift);
 
     // ===============================
-    // 7️⃣ CONDITIONAL OPERATOR
+    //  CONDITIONAL OPERATOR
     // ===============================
     $display("CONDITIONAL OUTPUT");
     arith = (a > b) ? a : b;  // selects value
     $display("Conditional result = %0d", arith);
 
     // ===============================
-    // 8️⃣ REDUCTION OPERATORS
+    //  REDUCTION OPERATORS
     // ===============================
     $display("REDUCTION OUTPUT");
     result = &x;  // AND all bits → 1 bit
@@ -92,7 +92,7 @@ module operators_demo;
     $display("^x (reduction XOR) = %0b", result);
 
     // ===============================
-    // 9️⃣ CONCATENATION & REPLICATION
+    //  CONCATENATION & REPLICATION
     // ===============================
     concat = {x, y};      // concatenate vectors
     $display("CONCATENATION OUTPUT");
@@ -102,7 +102,7 @@ module operators_demo;
     $display("Replication {2{x}} = %b", concat);
 
     // ===============================
-    // 🔟 LOGICAL IMPLICATION & EQUIVALENCE
+    // LOGICAL IMPLICATION & EQUIVALENCE
     // ===============================
     result = (a > b) -> (x != y);   // implication
     $display("IMPLICATION OUTPUT");
@@ -112,7 +112,7 @@ module operators_demo;
     $display("(a>b) <-> (x!=y) = %0b", result);
 
     // ===============================
-    // 🔹 EXTRA OPERATORS (MISSED ONES)
+    // EXTRA OPERATORS (MISSED ONES)
     // ===============================
 
     // Increment / Decrement
