@@ -1,0 +1,22 @@
+module user_defined_datatype_demo;
+
+  typedef logic [7:0] byte_t;   // 8-bit data
+  typedef int signed int_t;     // signed integer
+
+  byte_t a, b;
+  int_t  sum;
+
+initial begin
+
+a= 10;
+b= 7;
+  sum = {a + b};
+$display("Sum = %0d", sum);
+  
+end
+endmodule
+
+/* OUTPUT 
+
+KERNEL: Sum = 17 */
+
