@@ -1,0 +1,30 @@
+module ref_function;
+  
+  int a;
+  
+  function int  increment( ref int x );
+     
+    
+    x = x + 1;
+    
+    $display (" x the value of is %0d",x);
+    
+  endfunction
+  
+  initial begin
+    
+    a =5;
+   
+   increment(a);
+    
+    $display (" a after increment is %0d",a);
+     
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+ x the value of is 6
+ a after increment is 6 */
