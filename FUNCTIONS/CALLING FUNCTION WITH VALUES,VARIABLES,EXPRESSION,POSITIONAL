@@ -1,0 +1,49 @@
+module function_part1;
+  
+  int a,b;
+  int result_1,result_2,result_3,result_4;
+  
+  function int calculate(int x,int y);
+    
+    int temp;
+    
+    temp = x - y;
+    calculate = temp*2;
+    
+  endfunction
+  
+  initial begin
+    
+    a = 20;
+    b = 5;
+    
+    //  CALLING FUNCTION WITH VALUES AS ARGUMENTS
+    
+    result_1 = calculate(20,10);
+    $display("CALLING FUNCTION WITH VALUES AS ARGUMENTS : %0d",result_1);
+    
+    //  CALLING FUNCTION WITH VARIABLES AS ARGUMENTS
+    
+    result_2 = calculate(a,b);
+    $display("CALLING FUNCTION WITH VARIABLES AS ARGUMENTS  :%0d",result_2);
+    
+    // CALLING FUNCTION WITH EXPRESSIONS AS ARGUMENTS
+    
+    result_3 = calculate(a*2,b*2);
+    $display("CALLING FUNCTION WITH EXPRESSIONS AS ARGUMENTS : %0d",result_3);
+    
+    //  CALLING FUNCTION WITH POSITIONAL ARGUMENTS
+    
+    result_4 = calculate(b,a);
+    $display("CALLING FUNCTION WITH POSITIONAL ARGUMENTS : %0d",result_4);
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: CALLING FUNCTION WITH VALUES AS ARGUMENTS : 20
+# KERNEL: CALLING FUNCTION WITH VARIABLES AS ARGUMENTS  :30
+# KERNEL: CALLING FUNCTION WITH EXPRESSIONS AS ARGUMENTS : 60
+# KERNEL: CALLING FUNCTION WITH POSITIONAL ARGUMENTS : -30 */
+    
