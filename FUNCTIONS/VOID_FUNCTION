@@ -1,0 +1,22 @@
+module void_function;
+
+function void add(int a,int b);
+  
+  int sum ;
+  sum = a + b;
+  
+  $display("the value of sum is %0d",sum);
+  
+endfunction
+
+initial begin
+ 
+    add(10,20);
+  
+end
+   
+endmodule
+
+/* OUTPUT 
+
+KERNEL: the value of sum is 30 */
