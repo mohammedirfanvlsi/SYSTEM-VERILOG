@@ -1,0 +1,22 @@
+module default_argument;
+  
+  function int add(int a,int b = 10);
+    
+    add = a + b;
+    
+  endfunction
+  
+  initial begin 
+    
+    $display ("only a is passed : %0d",add(5));
+    $display ("only a & b is passed : %0d",add(50,7));
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: only a is passed : 15
+# KERNEL: only a & b is passed : 57 */
+    
+    
