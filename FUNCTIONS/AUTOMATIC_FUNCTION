@@ -1,0 +1,31 @@
+module automatic_task;
+  
+  function automatic inc();
+    
+    int a,b;
+    
+    a++;
+    b++;
+    
+     $display("the valuve of a is %0d",a);
+    $display("the valuve of b is %0d",b);
+   
+    
+  endfunction
+  
+  initial begin
+    
+    inc();
+    inc();
+    
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: the valuve of a is 1
+# KERNEL: the valuve of b is 1
+# KERNEL: the valuve of a is 1
+# KERNEL: the valuve of b is 1 */
