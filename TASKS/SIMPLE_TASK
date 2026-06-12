@@ -1,0 +1,23 @@
+module simple_task;
+  
+  task add_numbers(int a,int b);
+    int sum;
+    
+    sum = a+b;
+    
+    $display("SIMPLE TASK : a = %0d b = %0d sum = %0d",a,b,sum);
+  endtask
+  
+  initial begin
+    
+    add_numbers(0,7);
+    add_numbers(50,7);
+    
+  end
+  
+endmodule
+/* OUTPUT
+
+ KERNEL: SIMPLE TASK : a = 0 b = 7 sum = 7
+# KERNEL: SIMPLE TASK : a = 50 b = 7 sum = 57 */
+    
