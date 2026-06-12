@@ -1,0 +1,40 @@
+module disable_task_example;
+
+  task automatic count_task;
+    int i;
+
+    $display("[%0t] Task started", $time);
+
+    for (i = 1; i <= 10; i++) begin
+      
+      #3;
+      
+      $display("[%0t] Task running : i = %0d", $time, i);
+    end
+
+    $display("[%0t] Task completed normally", $time);
+  endtask
+  // -------------------------------------------------
+
+  initial begin
+    fork
+      count_task();   // Task starts and runs
+    join_none
+
+    #18;              // Let task run for some time
+
+    $display("[%0t] Disabling task now!", $time);
+    disable count_task;   // Forcefully stop task
+  end
+
+endmodule
+
+/* OUTPUT
+
+# KERNEL: [0] Task started
+# KERNEL: [3] Task running : i = 1
+# KERNEL: [6] Task running : i = 2
+# KERNEL: [9] Task running : i = 3
+# KERNEL: [12] Task running : i = 4
+# KERNEL: [15] Task running : i = 5
+# KERNEL: [18] Disabling task now! */
