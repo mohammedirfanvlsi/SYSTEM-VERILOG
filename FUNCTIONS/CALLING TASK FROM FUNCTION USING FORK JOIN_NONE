@@ -1,0 +1,35 @@
+module function_call_task;
+  
+  task delayed_task(int x);
+    
+    #5;
+    $display("task executed value with = %0d is",x);
+    
+  endtask
+  
+  function int display(int a);
+    
+    fork
+      
+      delayed_task(a);
+      
+    join_none
+    
+  endfunction
+  
+  initial begin
+    
+    display(100);
+    
+    $display("FUNCTION IS FINISHED");
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: FUNCTION IS FINISHED
+# KERNEL: task executed value with = 100 is */
+      
+    
