@@ -1,0 +1,32 @@
+module task_call_function;
+  
+  function int add(int a,int b);
+    
+    add = a + b;
+    
+  endfunction
+  
+  
+  task call_function(int x,int y);
+    
+    int result;
+    
+    result = add(x,y);
+ 
+    $display("function is called: the result is %0d",result);
+    
+  endtask
+  
+  initial begin
+    
+    call_function(0,7);
+    call_function(50,7);
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: function is called: the result is 7
+# KERNEL: function is called: the result is 57 */
