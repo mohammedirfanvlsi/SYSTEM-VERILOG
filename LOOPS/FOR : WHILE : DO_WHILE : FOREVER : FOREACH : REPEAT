@@ -1,0 +1,124 @@
+module loops_demo;
+
+  int i;
+  int count;
+  int arr[5] = '{10, 20, 30, 40, 50};
+
+  initial begin
+
+    // WHILE LOOP
+    // Condition is checked BEFORE entering loop
+    // If condition is false initially → loop never runs
+
+    i = 0;
+    $display("\nWHILE LOOP:");
+    while (i < 3) begin
+      $display("i = %0d", i);
+      i++;
+    end
+
+
+    
+    // DO-WHILE LOOP
+    // Loop body executes AT LEAST ONCE
+    // Condition checked AFTER execution
+
+    i = 5;
+    $display("\nDO-WHILE LOOP:");
+    do begin
+      $display("i = %0d", i);
+      i++;
+    end while (i < 3);   // condition false, but ran once
+
+
+  
+    // REPEAT LOOP
+    // Executes fixed number of times
+    // No condition checking
+
+    count = 0;
+    $display("\nREPEAT LOOP:");
+    repeat (4) begin
+      $display("repeat count = %0d", count);
+      count++;
+    end
+
+
+    
+    // FOR LOOP
+    // Initialization, condition, increment
+    // Most commonly used loop
+
+    $display("\nFOR LOOP:");
+    for (i = 0; i < 5; i++) begin
+      $display("i = %0d", i);
+    end
+
+
+
+    // FOREACH LOOP
+    // Used ONLY for arrays
+    // Automatically iterates over array indices
+
+    $display("\nFOREACH LOOP:");
+    foreach (arr[i]) begin
+      $display("arr[%0d] = %0d", i, arr[i]);
+    end
+
+
+    
+    // FOREVER LOOP
+    // Infinite loop
+    // Must be stopped using disable or break
+
+    $display("\nFOREVER LOOP (stopped manually):");
+    i = 0;
+    fork
+      forever begin
+        #5;
+        $display("forever i = %0d", i);
+        i++;
+        if (i == 3)
+          break;   // stops forever loop
+      end
+    join
+
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: WHILE LOOP:
+# KERNEL: i = 0
+# KERNEL: i = 1
+# KERNEL: i = 2
+# KERNEL: 
+# KERNEL: DO-WHILE LOOP:
+# KERNEL: i = 5
+# KERNEL: 
+# KERNEL: REPEAT LOOP:
+# KERNEL: repeat count = 0
+# KERNEL: repeat count = 1
+# KERNEL: repeat count = 2
+# KERNEL: repeat count = 3
+# KERNEL: 
+# KERNEL: FOR LOOP:
+# KERNEL: i = 0
+# KERNEL: i = 1
+# KERNEL: i = 2
+# KERNEL: i = 3
+# KERNEL: i = 4
+# KERNEL: 
+# KERNEL: FOREACH LOOP:
+# KERNEL: arr[0] = 10
+# KERNEL: arr[1] = 20
+# KERNEL: arr[2] = 30
+# KERNEL: arr[3] = 40
+# KERNEL: arr[4] = 50
+# KERNEL: 
+# KERNEL: FOREVER LOOP (stopped manually):
+# KERNEL: forever i = 0
+# KERNEL: forever i = 1
+# KERNEL: forever i = 2
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished. */
