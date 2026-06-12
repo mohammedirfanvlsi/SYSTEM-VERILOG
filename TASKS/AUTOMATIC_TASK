@@ -1,0 +1,30 @@
+module automatic_fask;
+ 
+  task automatic incre();
+  
+  int a,b;
+  
+  a++;
+  b++;
+  
+  $display("the valuve of a is %0d",a);
+  $display("the valuve of b is %0d",b);
+  
+  
+  endtask
+  
+  initial begin
+    
+    incre();
+    incre();
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+the valuve of a is 1
+the valuve of b is 1
+the valuve of a is 1
+the valuve of b is 1 */
