@@ -1,0 +1,30 @@
+module function_array;
+  
+  function int sum_array(int arr[]);
+    
+    int sum,i;
+    
+    sum = 0;
+    
+    for(i=0;i<5;i=i+1)
+    
+    sum +=  arr[i];
+    
+    return sum;
+    
+  endfunction
+  
+  initial begin
+    
+    int result,data[5];
+    
+    data = '{10,10,10,20,7};
+    
+    $display("the value of result is %0d",sum_array(data));
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: the value of result is 57 */
