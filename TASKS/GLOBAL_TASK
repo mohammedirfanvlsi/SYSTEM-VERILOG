@@ -1,0 +1,24 @@
+module global_task;
+  
+  initial begin
+  
+  add(3,4);
+  
+  end    
+endmodule
+
+task add(int a,int b);
+  
+  int sum ;
+  
+  sum = a + b;
+  
+  $display("the value of sum is ",sum);
+  
+endtask
+  
+  
+ /* OUTPUT 
+ 
+  KERNEL: the value of sum is           7 */
+ 
