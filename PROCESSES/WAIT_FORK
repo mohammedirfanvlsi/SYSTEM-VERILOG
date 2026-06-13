@@ -1,0 +1,44 @@
+module WAIT_FORK;
+  
+  initial begin
+    
+    $display("START time = %0d",$time);
+    
+    fork 
+      begin
+        
+        #5 $display(" PROCESS 1 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+      begin
+        
+        #10 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+       begin
+        
+        #15 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+    join_none
+    
+    $display("PARENT CONTINUES time = %0d",$time);
+    
+    wait fork;
+    
+      $display(" AFTER WAIT ALL PROCESS  COMPLETED time = %0d",$time);
+  
+  end
+ endmodule
+      
+ /* OUTPUT 
+ 
+ # KERNEL: START time = 0
+# KERNEL: PARENT CONTINUES time = 0
+# KERNEL:  PROCESS 1 IS COMPLETED time = 5
+# KERNEL:  PROCESS 2 IS COMPLETED time = 10
+# KERNEL:  PROCESS 2 IS COMPLETED time = 15
+# KERNEL:  AFTER WAIT ALL PROCESS  COMPLETED time = 15 */
