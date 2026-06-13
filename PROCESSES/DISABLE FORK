@@ -1,0 +1,40 @@
+module DISABLE_FORK;
+  
+  initial begin
+    
+    $display("START time = %0d",$time);
+    
+    fork 
+      begin
+        
+        #5 $display(" PROCESS 1 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+      begin
+        
+        #10 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+       begin
+        
+        #15 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+    join_any
+    
+    
+    $display(" ONE PROCESS IS FINISHED KILL OTHERS = %0d",$time);
+    
+    disable fork;
+  
+  end
+ endmodule
+
+/* OUTPUT 
+
+# KERNEL: START time = 0
+# KERNEL:  PROCESS 1 IS COMPLETED time = 5
+# KERNEL:  ONE PROCESS IS FINISHED KILL OTHERS = 5 */
