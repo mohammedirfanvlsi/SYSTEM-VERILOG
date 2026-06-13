@@ -1,0 +1,40 @@
+module FORK_JOIN_NONE;
+  
+  initial begin
+    
+    $display("START time = %0d",$time);
+    
+    fork 
+      begin
+        
+        #5 $display(" PROCESS 1 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+      begin
+        
+        #10 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+       begin
+        
+        #15 $display(" PROCESS 2 IS COMPLETED time = %0d",$time);
+        
+      end
+      
+    join_none
+    
+    
+    $display(" AFTER FORK JOIN NONE COMPLETED time = %0d",$time);
+  
+  end
+ endmodule
+
+/* OUTPUT 
+
+# KERNEL: START time = 0
+# KERNEL:  AFTER FORK JOIN NONE COMPLETED time = 0
+# KERNEL:  PROCESS 1 IS COMPLETED time = 5
+# KERNEL:  PROCESS 2 IS COMPLETED time = 10
+# KERNEL:  PROCESS 2 IS COMPLETED time = 15 */
