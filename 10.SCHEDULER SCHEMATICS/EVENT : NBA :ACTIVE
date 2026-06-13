@@ -1,0 +1,61 @@
+module sheduler_demo;
+  
+  int a,b,c;
+  event ev;
+  
+    // WAIT FOR EVENT	    
+
+  
+  initial begin
+    
+    @ev;     // Wait until event is triggered    
+
+    $display("AT TIME EVENT IS RECEIVED %0t",$time);
+    
+  end
+  
+  // ACTIVE REGION: Blocking assignments
+  
+  initial begin
+   
+    #2;
+    a = 10;
+    b = 47;
+    
+    c = a + b;
+    
+    $display("ACTIVE : a = %0d b = %0d c = %0d",a,b,c);
+    
+     -> ev;  // Trigger event (ACTIVE region)
+    
+  end
+ 
+   // NON-BLOCKING ASSIGNMENTS
+  
+  initial begin
+    
+    #5;
+    a <= 100;         // RHS evaluated now, LHS updated in NBA
+    b <= 200;
+    
+    $display("AFTER NBA SHEDULED a = %0d,b = %0d",a,b);
+    
+  end
+ 
+   // OBSERVE FINAL VALUES (POSTPONED)
+  
+  initial begin 
+    
+    #6
+    $display("FINAL VALUES : a = %0d b = %0d",a,b);
+    
+  end
+  
+endmodule
+
+/*OUTPUT
+
+# KERNEL: ACTIVE : a = 10 b = 47 c = 57
+# KERNEL: AT TIME EVENT IS RECEIVED 2
+# KERNEL: AFTER NBA SHEDULED a = 10,b = 47
+# KERNEL: FINAL VALUES : a = 100 b = 200 */
