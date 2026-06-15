@@ -1,0 +1,76 @@
+module fine_grain_proces;
+  
+  process p1;
+  process p2;
+  
+  initial begin
+    
+    p1 = process::self();
+    
+    $display("P1 STARTED AT time = %0t",$time);
+    $display("P1 STATUS = %S",p1.status().name());
+    
+    #5;
+    
+    $display("P1 RUNNING time = %0t",$time);
+    
+    #5;
+    
+    $display("P1 FINISHED MORMALLY AT time  = %0t",$time);
+    
+  end
+  
+  initial begin
+    
+    #2;
+    
+    p2 = process::self();
+    
+    $display("P2 STARTED AT time = %0t",$time);
+    
+    $display("P1 STATUS (FORM P2)  = %s",p1.status().name());
+    
+    #3;
+    
+    $display("SUSPENDING P1 AT time = %0t",$time);
+    p1.suspend();
+    
+    $display("P1 STATUS AFTER SUSPEND = %S",p1.status().name());
+    
+    #3;
+    
+    $display("RESUMEING P1  AT time = %0t",$time);
+    p1.resume();
+    
+    $display("P1 STATUS AFTER resuming = %S",p1.status().name());
+    
+    $display("P2 WAITING FOR P1 TO FINISH");
+    p1.await();
+    
+    $display("P2 DETECTED P1 IS COMPLETED AT time =%0t",$time);
+    
+    $display("P2 KILLING THE P1 (NO EFFECT IF P1 IS ALREADY FINISHED");
+    
+    p1.kill();
+    
+    $display("simulation end");
+    
+  end
+endmodule
+    
+/* OUTPUT 
+
+# KERNEL: P1 STARTED AT time = 0
+# KERNEL: P1 STATUS = RUNNING
+# KERNEL: P2 STARTED AT time = 2
+# KERNEL: P1 STATUS (FORM P2)  = WAITING
+# KERNEL: P1 RUNNING time = 5
+# KERNEL: SUSPENDING P1 AT time = 5
+# KERNEL: P1 STATUS AFTER SUSPEND = SUSPENDED
+# KERNEL: RESUMEING P1  AT time = 8
+# KERNEL: P1 STATUS AFTER resuming = WAITING
+# KERNEL: P2 WAITING FOR P1 TO FINISH
+# KERNEL: P1 FINISHED MORMALLY AT time  = 10
+# KERNEL: P2 DETECTED P1 IS COMPLETED AT time =10
+# KERNEL: P2 KILLING THE P1 (NO EFFECT IF P1 IS ALREADY FINISHED
+# KERNEL: simulation end */
