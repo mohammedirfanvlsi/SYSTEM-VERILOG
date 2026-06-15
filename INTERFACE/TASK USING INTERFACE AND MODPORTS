@@ -1,0 +1,63 @@
+interface inf;
+  
+  logic valid,ready;
+  logic slave_done,master_done;
+  
+  task display();
+    
+    $display("YOU WILL DEFINITELY PLACED AT MNC COMPANY");
+    
+  endtask
+    
+  
+  modport master_mp ( import task display(),input ready,output valid,output master_done);
+ modport slave_mp (import task display(),input valid,output ready ,output slave_done);
+  
+endinterface
+
+module master (inf.master_mp master_inf);
+  
+  initial begin
+  
+  master_inf.valid = 1;
+  
+  if(master_inf.ready)
+    
+     master_inf.master_done = 1;
+    
+    $display("THE MASTER IS DONE");
+  
+  end
+endmodule
+
+module slave (inf.slave_mp slave_inf);
+  
+  initial begin
+  
+    
+    if(slave_inf.valid)
+    
+    slave_inf.ready = 1;
+    
+    $display("THE SLAVE IS DONE");
+    
+    slave_inf.display();
+    
+  end
+endmodule
+
+module top;
+  
+  inf intf();
+    
+  master m(intf);
+  slave s(intf);
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: THE MASTER IS DONE
+# KERNEL: THE SLAVE IS DONE 
+# KERNEL: YOU WILL DEFINITELY PLACED AT MNC COMPANY */
+  
