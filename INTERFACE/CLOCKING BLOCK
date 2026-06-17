@@ -4,19 +4,26 @@ interface alu_if #(parameter width = 8)(input logic clk);
   logic [width-1 : 0] a,b;
   logic [2:0] mode;
   logic [width-1 : 0] result;
+
+ // -------- CLOCKING BLOCK (for TB) --------
   
-  clocking cb @(posedge clk);
+  clocking cb @(posedge clk);  
     
-    default input #1 output #0;
-    
-    output a,b,rst_n,mode;
-    input result;
-    
+    default input #1 output #0; 
+
+    output a,b,rst_n,mode;  // TB drives
+    input result; // TB samples
+     
   endclocking
+
+ // -------- MODPORT FOR DUT --------
   
   modport dut(input a,b,rst_n,mode,clk,output result );
   
-  modport tb(clocking cb);
+// -------- MODPORT FOR TB --------
+
+modport tb(clocking cb);
+
     
   endinterface
     
@@ -53,8 +60,12 @@ interface alu_if #(parameter width = 8)(input logic clk);
           logic clk = 0;
           
           always #5 clk = ~clk;
+
+           // Interface instance
           
           alu_if #(8) alu_bus(clk);
+
+           // DUT instance
           
           alu dut (alu_bus);
           
