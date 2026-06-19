@@ -24,8 +24,7 @@ module FORK_JOIN_NONE;
       end
       
     join_none
-    
-    
+       
     $display(" AFTER FORK JOIN NONE COMPLETED time = %0d",$time);
   
   end
