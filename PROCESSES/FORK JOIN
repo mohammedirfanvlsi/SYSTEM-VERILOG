@@ -25,7 +25,6 @@ module FORK_JOIN;
       
     join
     
-    
     $display(" AFTER FORK JOIN COMPLETED time = %0d",$time);
   
   end
