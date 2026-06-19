@@ -25,7 +25,6 @@ module DISABLE_FORK;
       
     join_any
     
-    
     $display(" ONE PROCESS IS FINISHED KILL OTHERS = %0d",$time);
     
     disable fork;
