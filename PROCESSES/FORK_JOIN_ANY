@@ -24,8 +24,7 @@ module FORK_JOIN_ANY;
       end
       
     join_any
-    
-    
+       
     $display(" AFTER FORK JOIN ANY COMPLETED time = %0d",$time);
   
   end
