@@ -1,7 +1,7 @@
 module array_manipulation_method;
   
   int arr[] = '{5,10,15,10,20};
-  
+
   int a;
   
   initial begin
