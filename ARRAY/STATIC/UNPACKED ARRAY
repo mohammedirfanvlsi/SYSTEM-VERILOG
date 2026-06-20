@@ -2,7 +2,7 @@ module static_unpacked;
   
   
   logic [7:0]array_1d[4];
-  
+
   
   logic[7:0]array_2d[2][3];
   
