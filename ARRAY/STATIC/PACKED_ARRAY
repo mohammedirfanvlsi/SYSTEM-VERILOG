@@ -19,7 +19,7 @@ module static_packed_array;
   initial begin
     
     array_1d = 8'h13;
-    
+   
     
     array_2d = $random;
     
