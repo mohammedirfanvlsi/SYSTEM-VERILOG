@@ -6,7 +6,7 @@ module associative_array;
   
   real array_3d[*][*][*];
   
-  
+
   initial begin
     
     array_1d["first"] = 10;
