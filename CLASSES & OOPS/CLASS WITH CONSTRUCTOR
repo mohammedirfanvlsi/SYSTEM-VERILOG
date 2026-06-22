@@ -1,0 +1,33 @@
+module class_ex;
+  
+  class ex;
+    
+    int a;
+    
+    function new();
+      
+      $display(" CONSTRUCTOR IS CALLED THE VALUE OF A IS %0d",a);
+      
+    endfunction
+    
+  endclass
+  
+  initial begin
+    
+    ex c1;
+    
+    c1 = new();
+    
+    c1.a = 25;
+    
+    $display(" UPDATED  VALUE OF A IS %0d",c1.a);
+     
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL:  CONSTRUCTOR IS CALLED THE VALUE OF A IS 0
+# KERNEL:  UPDATED  VALUE OF A IS 25 */
