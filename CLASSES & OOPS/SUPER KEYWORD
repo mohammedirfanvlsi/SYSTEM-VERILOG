@@ -1,0 +1,38 @@
+module super_keyword;
+  
+  class c1;
+    
+    int a;
+    
+    function new();
+      
+      $display("DISPLAYIG FROM PARENT");
+      
+    endfunction
+    
+  endclass
+    
+    class c2 extends c1;
+      
+      function new();
+        
+        super.new(); // parent class new method
+        
+      endfunction
+      
+    endclass
+  
+  initial begin
+    
+    c1 p_h;
+    c2 c_h;
+    
+    c_h = new();
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: DISPLAYIG FROM PARENT */
