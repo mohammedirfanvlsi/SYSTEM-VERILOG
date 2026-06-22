@@ -1,0 +1,35 @@
+module this_keyword_demo;
+
+  class ex;
+    int a;
+    int b;
+    int sum;
+
+    // Constructor
+    function new(int a, int b);
+      
+      this.a = a;   // class variable = argument
+      this.b = b;
+      sum = this.a + this.b;
+      
+    endfunction
+
+    function void display();
+      $display("a = %0d, b = %0d, sum = %0d", a, b, sum);
+    endfunction
+    
+  endclass
+
+  initial begin
+    ex c1;
+
+    c1 = new(10, 20);   // arguments go to constructor
+    c1.display();
+    
+  end
+
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: a = 10, b = 20, sum = 30 */
