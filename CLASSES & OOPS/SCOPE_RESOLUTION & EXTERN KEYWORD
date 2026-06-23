@@ -1,0 +1,39 @@
+module scope_extern;
+  
+  class ex;
+    
+    int a,b;
+    
+    extern function new(int a,int b);
+      
+      extern function int calculate();
+        
+        endclass
+        
+        function ex::new(int a,int b);
+          
+          this.a = a;
+          this.b = b;
+          
+        endfunction
+        
+        function int ex::calculate();
+          
+           return  a + b ;
+          
+        endfunction
+        
+        initial begin
+          
+          ex c1;
+          
+          c1 = new(50,7);
+          
+          $display("THE SCOPE AND EXTERN OUTPUT IS %0d",c1.calculate());
+          
+        end
+        endmodule
+        
+        /* OUTPUT 
+        
+        # KERNEL: THE SCOPE AND EXTERN OUTPUT IS 57 */
