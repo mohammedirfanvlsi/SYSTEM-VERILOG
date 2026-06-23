@@ -1,0 +1,59 @@
+module class_assignment;
+  
+  class ex;
+    
+    int a;
+    
+    function new();
+      
+      a = 10;
+      
+    endfunction
+    
+    function int value();
+      
+      $display("THE VALUE OF A IS %0d",a);
+      
+    endfunction
+    
+  endclass
+  
+  initial begin
+    
+    ex h1,h2;
+    
+    h1 = new();
+    
+    $display("contents of h1 before changes");
+    
+    h1.value();
+    
+    h2 = h1;
+    
+    $display("contents of h2 before changes");
+    
+    h2.value();
+    
+    h2.a = 20;
+    
+    $display("contents of h1 after changes");
+    
+    h1.value();
+    
+    $display("contents of h2 after changes");
+    
+    h2.value();
+    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: contents of h1 before changes
+# KERNEL: THE VALUE OF A IS 10
+# KERNEL: contents of h2 before changes
+# KERNEL: THE VALUE OF A IS 10
+# KERNEL: contents of h1 after changes
+# KERNEL: THE VALUE OF A IS 20
+# KERNEL: contents of h2 after changes
+# KERNEL: THE VALUE OF A IS 20 */
