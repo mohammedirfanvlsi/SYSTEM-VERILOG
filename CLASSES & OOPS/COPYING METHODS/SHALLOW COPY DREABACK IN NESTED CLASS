@@ -1,0 +1,60 @@
+module shallow_drawback;
+
+class c2;
+  
+  int b;
+  
+  function void display(string s);
+    
+    $display("%s : THE VALUE OF B IS %0d",s,b);
+    
+  endfunction
+  
+endclass
+  
+  class c1;
+    
+    int a;
+    
+    c2 ph; // c2 handle
+    
+    function new();
+      
+      ph = new();
+      
+    endfunction
+    
+    function void display(string s);
+      
+      $display("%s : THE VALUE OF A IS %0d",s,a);
+      
+    endfunction
+    
+  endclass
+  
+  initial begin
+    
+    c1 c_h1,c_h2;
+    
+    c_h1 = new();
+    
+    c_h1.ph.b = 10;
+    
+    c_h1.ph.display("1 st HANDLE");
+    
+    c_h2 = new c_h1;
+    
+    c_h2.ph.b = 20;
+    
+        c_h1.ph.display("1 st HANDLE");
+    c_h1.ph.display("2 nd HANDLE");
+    
+  end
+  
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: 1 st HANDLE : THE VALUE OF B IS 10
+# KERNEL: 1 st HANDLE : THE VALUE OF B IS 20
+# KERNEL: 2 nd HANDLE : THE VALUE OF B IS 20 */
