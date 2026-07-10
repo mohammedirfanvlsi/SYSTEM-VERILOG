@@ -1,28 +1,51 @@
-class MyPacket;
-      // WHAT: We are declaring variables and telling the system they should be random.
-      // WHY: So we don't have to manually assign values to them later.
-      rand  bit [3:0] address; // A 4-bit random variable (can be 0 to 15)
-      randc bit [1:0] id;      // A 2-bit random-cyclic variable (can be 0,1,2,3)
+   class MyPacket;
+      // A 4-bit variable can hold values from 0 to 15 (because 2^4 = 16 values).
+      // 'rand' means it will pick a random number like rolling a dice.
+      rand  bit [3:0] address;
 
-      // WHAT: This is a constraint block named "limit_address".
-      // WHY: To put boundaries on our random variables.
+      // A 2-bit variable can hold values 0, 1, 2, or 3.
+      // 'randc' (random-cyclic) means it will shuffle through 0,1,2,3 without repeating
+      // until it has used all of them.
+      randc bit [1:0] id;
+
+      // The Rule Block
       constraint limit_address {
-        // HOW: Just write the variable name, a math operator, and a value.
-        address < 10;          // Rule: address MUST be less than 10.
+        address < 10; // Rule: Even though address can hold up to 15, we restrict it to under 10.
       }
     endclass
 
-    module test;
-      MyPacket pkt; // Create a handle (pointer) for the class
+    // 2. The Module to run and test it
+    module test_basics;
+      MyPacket pkt; // Create a handle for the class
 
       initial begin
-        pkt = new(); // Create the actual object in memory
+        pkt = new(); // Create the actual object
+        $display("--- STEP 1: BASICS ---");
 
-        // WHAT: We call the built-in randomize() function.
-        // WHY: This tells the system "Okay, generate the random numbers now!"
-        // HOW: It returns 1 if successful, 0 if it fails (breaks a rule).
-        if (pkt.randomize() == 1) begin
-          $display("Success! Address is %0d", pkt.address);
+        // We use a repeat loop to press the 'randomize' button 5 times.
+        repeat(10) begin
+          // HOW: if randomize is successful (returns 1), we print the values.
+          if (pkt.randomize() == 1) begin
+            // $display will print the values on the screen. %0d means "decimal number".
+            $display("Address (rand): %0d | ID (randc): %0d", pkt.address, pkt.id);
+          end
         end
       end
     endmodule
+      
+/* OUTPUT 
+
+# KERNEL: --- STEP 1: BASICS ---
+# KERNEL: Address (rand): 8 | ID (randc): 2
+# KERNEL: Address (rand): 7 | ID (randc): 3
+# KERNEL: Address (rand): 7 | ID (randc): 0
+# KERNEL: Address (rand): 9 | ID (randc): 1
+# KERNEL: Address (rand): 3 | ID (randc): 1
+# KERNEL: Address (rand): 8 | ID (randc): 0
+# KERNEL: Address (rand): 3 | ID (randc): 3
+# KERNEL: Address (rand): 0 | ID (randc): 2
+# KERNEL: Address (rand): 6 | ID (randc): 2
+# KERNEL: Address (rand): 0 | ID (randc): 1
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.
+Done */
