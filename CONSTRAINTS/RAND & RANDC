@@ -1,0 +1,28 @@
+class MyPacket;
+      // WHAT: We are declaring variables and telling the system they should be random.
+      // WHY: So we don't have to manually assign values to them later.
+      rand  bit [3:0] address; // A 4-bit random variable (can be 0 to 15)
+      randc bit [1:0] id;      // A 2-bit random-cyclic variable (can be 0,1,2,3)
+
+      // WHAT: This is a constraint block named "limit_address".
+      // WHY: To put boundaries on our random variables.
+      constraint limit_address {
+        // HOW: Just write the variable name, a math operator, and a value.
+        address < 10;          // Rule: address MUST be less than 10.
+      }
+    endclass
+
+    module test;
+      MyPacket pkt; // Create a handle (pointer) for the class
+
+      initial begin
+        pkt = new(); // Create the actual object in memory
+
+        // WHAT: We call the built-in randomize() function.
+        // WHY: This tells the system "Okay, generate the random numbers now!"
+        // HOW: It returns 1 if successful, 0 if it fails (breaks a rule).
+        if (pkt.randomize() == 1) begin
+          $display("Success! Address is %0d", pkt.address);
+        end
+      end
+    endmodule
