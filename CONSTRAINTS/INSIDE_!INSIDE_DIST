@@ -1,0 +1,58 @@
+ class DataPacket;
+      // 8-bit variable (can go up to 255)
+      rand bit [7:0] value;
+   
+   rand bit [7:0] not_value;
+      // 4-bit variable (can go up to 15)
+      rand bit [3:0] error_code;
+
+      constraint c_value {
+        // Rule: 'value' MUST be exactly 10, exactly 20, OR any number from 30 to 40.
+        value inside {10, 20, [30:40]};
+        
+      }
+
+   constraint not_inside {
+     
+     !(not_value inside {0,10,20});
+     
+   }
+      constraint c_error {
+        // Rule: Assign weights.
+        // The number 0 gets a weight of 80. The number 1 gets a weight of 20.
+        // This means 0 will be chosen 80% of the time, and 1 will be chosen 20% of the time.
+        error_code dist { 0 := 80, 1 := 20 };
+      }
+    endclass
+
+    module test_values;
+      DataPacket pkt;
+
+      initial begin
+        pkt = new();
+        $display("\n--- STEP 2: SPECIFIC VALUES ---");
+
+        // Repeat 10 times to give the 80/20 probability a chance to show.
+        repeat(10) begin
+          if (pkt.randomize() == 1) begin
+            $display("Value generated: %0d | Error Code generated: %0d | NOT_VALUE_GENERATED : %0d", pkt.value, pkt.error_code,pkt.not_value);
+          end
+        end
+      end
+    endmodule
+
+/* OUTPUT 
+
+# KERNEL: --- STEP 2: SPECIFIC VALUES ---
+# KERNEL: Value generated: 37 | Error Code generated: 1 | NOT_VALUE_GENERATED : 114
+# KERNEL: Value generated: 30 | Error Code generated: 0 | NOT_VALUE_GENERATED : 188
+# KERNEL: Value generated: 20 | Error Code generated: 0 | NOT_VALUE_GENERATED : 16
+# KERNEL: Value generated: 38 | Error Code generated: 0 | NOT_VALUE_GENERATED : 99
+# KERNEL: Value generated: 35 | Error Code generated: 0 | NOT_VALUE_GENERATED : 101
+# KERNEL: Value generated: 39 | Error Code generated: 0 | NOT_VALUE_GENERATED : 160
+# KERNEL: Value generated: 39 | Error Code generated: 0 | NOT_VALUE_GENERATED : 151
+# KERNEL: Value generated: 30 | Error Code generated: 1 | NOT_VALUE_GENERATED : 82
+# KERNEL: Value generated: 40 | Error Code generated: 1 | NOT_VALUE_GENERATED : 13
+# KERNEL: Value generated: 35 | Error Code generated: 0 | NOT_VALUE_GENERATED : 108
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished */
