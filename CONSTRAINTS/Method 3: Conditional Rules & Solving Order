@@ -1,0 +1,72 @@
+class ConditionalPacket;
+      rand bit       is_vip;   // 1-bit (0 or 1)
+      rand bit [3:0] access;   // 4-bit (0 to 15)
+      rand bit [3:0] room_num; // 4-bit (0 to 15)
+
+      // --- TOPIC 10: IMPLICATION (->) ---
+      constraint c_implication {
+        // Rule: IF they are a VIP (1), THEN their room MUST be 15.
+        // If they are not VIP (0), their room can be anything.
+        (is_vip == 1) -> (room_num == 15);
+      }
+
+      // --- TOPIC 11: IF-ELSE ---
+      constraint c_ifelse {
+        // Rule: Exact same logic, but using if-else.
+        if (is_vip == 1) {
+          access > 10;  // VIPs get high access
+        } else {
+          access <= 10; // Regulars get low access
+        }
+      }
+
+      // --- TOPIC 13: SOLVE BEFORE ---
+      constraint c_solve {
+        // Rule: Because 'access' and 'room_num' both depend on 'is_vip',
+        // we tell the engine to fairly flip the coin for 'is_vip' FIRST.
+        solve is_vip before access;
+        solve is_vip before room_num;
+      }
+
+      // --- TOPIC 16: CONSTRAINT CONFLICT ---
+      /*
+      constraint bad_rule {
+        access > 12;
+        access < 5;
+        // This is a conflict! It is mathematically impossible.
+        // If we uncommented this, randomize() would fail and return 0.
+      }
+      */
+    endclass
+
+    module test_conditions;
+      ConditionalPacket pkt = new();
+
+      initial begin
+        $display("--- METHOD 3: CONDITIONS & SOLVING ---");
+
+        // We loop 5 times to see the conditions react.
+        repeat(5) begin
+          // We check if randomize() == 1. If it was 0, it would mean a CONFLICT happened!
+          if (pkt.randomize() == 1) begin
+
+            // Topic 9 (Bidirectional) is happening here silently. The engine read ALL
+            // the rules at once and output a perfect valid combination.
+            $display("VIP Status: %0b | Access Level: %0d | Room: %0d",
+                      pkt.is_vip, pkt.access, pkt.room_num);
+
+          end else begin
+            $display("Randomization FAILED! (Constraint Conflict)");
+          end
+        end
+      end
+    endmodule
+        
+/* OUTPUT
+
+--- METHOD 3: CONDITIONS & SOLVING ---
+VIP Status: 1 | Access Level: 11 | Room: 15
+VIP Status: 1 | Access Level: 11 | Room: 15
+VIP Status: 0 | Access Level: 10 | Room: 0
+VIP Status: 0 | Access Level: 6 | Room: 6
+VIP Status: 0 | Access Level: 8 | Room: 14 */
