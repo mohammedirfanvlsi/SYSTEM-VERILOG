@@ -1,0 +1,84 @@
+ class ParentPacket;
+      rand byte a;
+      // This is the parent's rule
+      constraint cons { a == 5; }
+    endclass
+
+    // Child inherits from Parent
+    class ChildPacket extends ParentPacket;
+      // Because the name 'cons' is the EXACT SAME as the parent,
+      // this rule OVERRIDES the parent. 'a' will be 10, not 5.
+      constraint cons { a == 10; }
+    endclass
+
+    // --- TOPIC 4: EXTERN CONSTRAINTS & TOPIC 2: RAND/RANDC ---
+    class MainPacket;
+      rand byte x;
+      randc bit [1:0] y;
+
+      // We only declare the NAME of the constraint here using 'extern'
+      extern constraint ext_rule;
+    endclass
+
+    // We define the actual math OUTSIDE the class using ClassName::ConstraintName
+    constraint MainPacket::ext_rule {
+      x < 10;
+    }
+
+    // ---------------------------------------------------------
+    module test_method_1;
+
+      ChildPacket child = new();
+      MainPacket  main  = new();
+
+      // Local module variables (NOT in a class)
+      integer rand_var;
+      byte unsigned urand_var;
+      byte urand_range;
+      bit [3:0] std_var;
+
+      initial begin
+        $display("--- TOPIC 1: RANDOM FUNCTION SYSTEM ---");
+        // $random gives a SIGNED 32-bit number
+        rand_var = $random();
+        // $urandom gives an UNSIGNED 32-bit number
+        urand_var = $urandom();
+        // $urandom_range gives a number between 10 and 20
+        urand_range = $urandom_range(20, 10);
+
+        $display("$random: %0d | $urandom: %0d | $urandom_range: %0d", rand_var, urand_var, urand_range);
+
+        $display("\n--- TOPIC 3: STD::RANDOMIZE ---");
+        // We randomize the local variable 'std_var' which is NOT in a class!
+        if(std::randomize(std_var) with { std_var inside {[5:8]}; }) begin
+          $display("std::randomize success! std_var = %0d", std_var);
+        end
+
+        $display("\n--- TOPIC 4: OVERRIDING ---");
+        if(child.randomize()) begin
+          // This will print 10, proving the child overrode the parent's rule of 5!
+          $display("Overridden constraint value of 'a' = %0d", child.a);
+        end
+        
+        if(main.randomize() == 1)begin
+      
+          $display ("THE  vALUE OF X IS %0d",main.x);
+      
+    end    
+  end
+endmodule
+
+/* OUTPUT 
+
+# KERNEL: --- TOPIC 1: RANDOM FUNCTION SYSTEM ---
+# KERNEL: $random: 303379748 | $urandom: 242 | $urandom_range: 11
+# KERNEL: 
+# KERNEL: --- TOPIC 3: STD::RANDOMIZE ---
+# KERNEL: std::randomize success! std_var = 8
+# KERNEL: 
+# KERNEL: --- TOPIC 4: OVERRIDING ---
+# KERNEL: Overridden constraint value of 'a' = 10
+# KERNEL: THE  vALUE OF X IS -67
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.
+Done */
