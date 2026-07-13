@@ -1,0 +1,73 @@
+ class ArrayPacket;
+      // 1. STATIC ARRAY (Size is fixed at 3)
+   rand bit [4:0] stat_arr [3];
+
+      // 2. DYNAMIC ARRAY (Empty brackets, no size)
+      rand bit [7:0] dyn_arr [];
+
+      // 3. QUEUE (Dollar sign brackets)
+   rand bit [3:0] my_queue [$];
+
+      // --- CONSTRAINTS FOR STATIC ARRAY ---
+      constraint c_static {
+        // Array Reduction Method: .sum()
+        // We cast it to (int) to prevent overflow.
+        // Rule: The sum of all 3 elements in stat_arr MUST equal 12!
+        stat_arr.sum() with (int'(item)) == 12;
+      }
+
+      // --- CONSTRAINTS FOR DYNAMIC ARRAY ---
+      constraint c_dynamic {
+        // Rule 1: We must limit the size, otherwise it might be 0!
+        dyn_arr.size() > 3;
+        dyn_arr.size() < 7; // Size will be 4, 5, or 6.
+
+        // Rule 2: We use 'foreach' to loop through whatever size was chosen
+        foreach (dyn_arr[i]) {
+          // Rule: The value at index 'i' must equal i * i (e.g., index 2 = 4)
+          dyn_arr[i] == i * i;
+        }
+      }
+
+      // --- CONSTRAINTS FOR QUEUE ---
+      constraint c_queue {
+        // Rule: Force the queue to have exactly 5 elements
+        my_queue.size() == 5;
+      }
+    endclass
+
+    module test_arrays;
+      ArrayPacket pkt = new();
+
+      initial begin
+        $display("--- ARRAY RANDOMIZATION ---");
+
+        // We only need to run this once to see it work
+        if(pkt.randomize() == 1) begin
+
+          // %p prints the entire array perfectly formatted
+          $display("Static Array (Sum is 12): %p", pkt.stat_arr);
+
+          $display("Dynamic Array Size: %0d", pkt.dyn_arr.size());
+          $display("Dynamic Array Data (i * i): %p", pkt.dyn_arr);
+
+          $display("Queue Size: %0d", pkt.my_queue.size());
+          $display("Queue Data: %p", pkt.my_queue);
+
+        end else begin
+          $display("Randomization failed!");
+        end
+      end
+    endmodule
+        
+  /* OUTPUT 
+  
+  # KERNEL: --- ARRAY RANDOMIZATION ---
+# KERNEL: Static Array (Sum is 12): '{0, 11, 1}
+# KERNEL: Dynamic Array Size: 6
+# KERNEL: Dynamic Array Data (i * i): '{0, 1, 4, 9, 16, 25}
+# KERNEL: Queue Size: 5
+# KERNEL: Queue Data: '{15, 12, 1, 7, 15}
+# KERNEL: Simulation has finished. There are no more test vectors to simulate.
+# VSIM: Simulation has finished.
+Done */
