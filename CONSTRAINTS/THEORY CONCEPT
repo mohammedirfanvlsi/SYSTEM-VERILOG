@@ -1,4 +1,17 @@
- ### The  :/  vs  :=  Operator in  dist
+ ### Introduction: The "What" and "Why" of Constraints
+
+  What is it?
+  In old Verilog, if you wanted to test an adder, you had to manually type:  A=1, B=2 , then  A=5, B=10 . This is called a "directed test".
+  SystemVerilog introduced the Random Function System—a built-in engine that generates random numbers automatically.
+  A Constraint is simply a rule you give to this random engine.
+
+  Why do we use it?
+  If you tell the system, "Give me a random address," it might give you  999,999,999 . But what if your hardware only supports addresses up to  100 ? The
+  test will crash.
+  Constraints allow you to say: "Generate a random address, BUT the address must be between 0 and 100."
+
+
+### The  :/  vs  :=  Operator in  dist
 
   Interviewer question: "What is the difference between  :=  and  :/  in a distribution?"
   Answer:
