@@ -1,0 +1,76 @@
+class BinPacket;
+      // A 4-bit address can normally go from 0 up to 15.
+      rand bit [3:0] address;
+
+      covergroup bin_cg;
+        option.per_instance = 1;
+
+        c_addr: coverpoint address {
+
+          // Bin 1: Check coverage ONLY for the number 2
+          bins b_two = {2};
+
+          // Bin 2: Check coverage ONLY for the numbers 10, 11, or 12
+          bins b_high = {[10:12]};
+
+          // Ignore: Never check coverage for 0 or 1.
+          ignore_bins b_ignored = {0, 1};
+
+          // Illegal: If the randomizer generates 15, CRASH the simulation!
+          illegal_bins b_crash = {15};
+
+        }
+      endgroup
+
+      function new();
+        bin_cg = new();
+      endfunction
+    endclass
+
+    module test_bins;
+      BinPacket pkt = new();
+
+      initial begin
+
+        // We will loop 20 times.
+        // Eventually, it will randomly generate 15 and crash!
+        repeat (20) begin
+
+          if (pkt.randomize() == 1) begin
+
+            // We press the shutter button EVERY time a new number is generated!
+            pkt.bin_cg.sample();
+
+            $display("Generated Address = %0d | Coverage = %.2f%%",
+                     pkt.address, pkt.bin_cg.get_inst_coverage());
+
+          end
+        end
+      end
+    endmodule
+/* OUTPUT 
+
+ Generated Address = 13 | Coverage = 0.00%
+# Generated Address = 1 | Coverage = 0.00%
+# ** Error: (vsim-8565) Illegal state bin was hit at value=15. The bin counter for the illegal bin '\/design_sv_unit::BinPacket::bin_cg .c_addr.b_crash' is 1.
+#    Time: 0 ns  Iteration: 0  Instance: /test_bins
+# Generated Address = 15 | Coverage = 0.00%
+# Generated Address = 4 | Coverage = 0.00%
+# ** Error: (vsim-8565) Illegal state bin was hit at value=15. The bin counter for the illegal bin '\/design_sv_unit::BinPacket::bin_cg .c_addr.b_crash' is 2.
+#    Time: 0 ns  Iteration: 0  Instance: /test_bins
+# Generated Address = 15 | Coverage = 0.00%
+# Generated Address = 14 | Coverage = 0.00%
+# Generated Address = 3 | Coverage = 0.00%
+# Generated Address = 14 | Coverage = 0.00%
+# Generated Address = 7 | Coverage = 0.00%
+# Generated Address = 6 | Coverage = 0.00%
+# Generated Address = 13 | Coverage = 0.00%
+# Generated Address = 14 | Coverage = 0.00%
+# Generated Address = 1 | Coverage = 0.00%
+# Generated Address = 0 | Coverage = 0.00%
+# Generated Address = 4 | Coverage = 0.00%
+# Generated Address = 13 | Coverage = 0.00%
+# Generated Address = 4 | Coverage = 0.00%
+# Generated Address = 6 | Coverage = 0.00%
+# Generated Address = 0 | Coverage = 0.00%
+# Generated Address = 12 | Coverage = 50.00% */
