@@ -1,0 +1,96 @@
+module test_method_1;
+
+      // --- 1. DECLARE SIGNALS ---
+      // We need a clock for our concurrent assertion
+      bit clk;
+
+      // We need two variables to test our rules
+      bit A;
+      bit B;
+
+      // --- 2. CLOCK GENERATION ---
+      // This toggles the clock every 5ns
+      always #5 clk = ~clk;
+
+      // ====================================================
+      // TYPE 1: IMMEDIATE ASSERTION
+      // ====================================================
+      // Remember: Immediate assertions MUST go inside a procedural block (like always)
+      always @(posedge clk) begin
+
+        // We give it the label "imm_check" so we can find it in the error log.
+        // The rule is: (A == B).
+        // If true, it prints the PASS message. ELSE, it prints the ERROR message.
+        imm_check: assert (A == B)
+          $display("[%0t] IMMEDIATE PASS: A and B are equal!", $time);
+        else
+          $error("[%0t] IMMEDIATE FAIL: A and B are NOT equal!", $time);
+
+      end
+
+
+      // ====================================================
+      // TYPE 2: CONCURRENT ASSERTION
+      // ====================================================
+      // Remember: Concurrent assertions run independently outside of always blocks!
+
+      // Step 1: We create the "Rulebook" using the property keyword
+      property concurrent_rule;
+
+        // Step 2: We MUST tie the property to a clock so it can measure time.
+        @(posedge clk)
+
+        // Step 3: We write the exact same rule (A == B)
+        (A == B);
+
+      endproperty
+
+      // Step 4: We turn the guard ON by using 'assert property'
+      // We give it the label "conc_check" so we can find it in the error log.
+      // We use the exact same 'else' syntax here!
+      conc_check: assert property (concurrent_rule)
+        $display("[%0t] CONCURRENT PASS: A and B are equal!", $time);
+      else
+        $error("[%0t] CONCURRENT FAIL: A and B are NOT equal!", $time);
+
+
+      // ====================================================
+      // TEST STIMULUS (Driving the values to test the guards)
+      // ====================================================
+      initial begin
+
+        // Test 1: We set A and B to the same value (Both are 0)
+        A = 0;
+        B = 0;
+
+        // We wait for 2 clock ticks (20ns) to let the guards check the rule.
+        // Because A == B, BOTH assertions will PASS!
+        #20;
+
+        // Test 2: We change A to 1, but leave B at 0. They are NOT equal!
+        A = 1;
+        B = 0;
+
+        // We wait for 2 clock ticks (20ns) again.
+        // Because they are not equal, BOTH assertions will throw an ERROR!
+        #20;
+
+        $finish; // End the simulation
+      end
+
+    endmodule
+        
+    /* OUTPUT 
+    
+    [5] IMMEDIATE PASS: A and B are equal!
+[5] CONCURRENT PASS: A and B are equal!
+[15] IMMEDIATE PASS: A and B are equal!
+[15] CONCURRENT PASS: A and B are equal!
+xmsim: *E,ASRTST (./testbench.sv,29): (time 25 NS) Assertion test_method_1.imm_check has failed
+[25] IMMEDIATE FAIL: A and B are NOT equal!
+xmsim: *E,ASRTST (./testbench.sv,56): (time 25 NS) Assertion test_method_1.conc_check has failed
+[25] CONCURRENT FAIL: A and B are NOT equal!
+xmsim: *E,ASRTST (./testbench.sv,29): (time 35 NS) Assertion test_method_1.imm_check has failed
+[35] IMMEDIATE FAIL: A and B are NOT equal!
+xmsim: *E,ASRTST (./testbench.sv,56): (time 35 NS) Assertion test_method_1.conc_check has failed
+[35] CONCURRENT FAIL: A and B are NOT equal! */
