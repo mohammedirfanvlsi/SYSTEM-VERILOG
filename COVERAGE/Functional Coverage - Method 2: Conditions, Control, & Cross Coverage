@@ -1,0 +1,85 @@
+       class SmartPacket;
+      rand bit [1:0] address; // Can be 0, 1, 2, or 3
+      rand bit       is_read; // Can be 0 (Write) or 1 (Read)
+      rand bit       enable;  // Can be 0 (Off) or 1 (On)
+
+      // --- DECLARING THE COVERGROUP ---
+      covergroup smart_cg;
+        // VERY IMPORTANT for some simulators: Calculate math for this specific instance
+        option.per_instance = 1;
+
+        // --- TOPIC 1: CONDITIONAL COVERAGE ---
+        // We only care about tracking the address IF enable is 1!
+        // If enable is 0, it completely ignores whatever address is generated.
+        c_addr: coverpoint address iff (enable == 1);
+
+        // Track the read/write action normally
+        c_rw: coverpoint is_read;
+
+        // --- TOPIC 3: CROSS COVERAGE ---
+        // This creates a matrix of combinations: 4 addresses x 2 actions = 8 combinations!
+        c_cross: cross c_addr, c_rw;
+
+      endgroup
+
+      // --- BUILDING THE COVERGROUP ---
+      function new();
+        smart_cg = new();
+      endfunction
+
+    endclass
+
+    module test_advanced_coverage;
+      SmartPacket pkt = new();
+
+      initial begin
+        $display("--- METHOD 2: CONDITIONS & CROSS COVERAGE ---");
+
+        // Loop 20 times to generate a lot of traffic
+        repeat (20) begin
+
+          // Safely randomize
+          if (pkt.randomize() == 1) begin
+
+            // Tell the simulator to look at the variables NOW!
+            pkt.smart_cg.sample();
+
+            $display("Enable=%0d | Addr=%0d | Read=%0d | Cross Coverage=%.2f%%",
+                     pkt.enable, pkt.address, pkt.is_read, pkt.smart_cg.c_cross.get_inst_coverage());
+
+            // --- TOPIC 2: START() AND STOP() ---
+            // If our checklist hits 100%, tell the simulator to STOP tracking.
+            if (pkt.smart_cg.get_inst_coverage() == 100.00) begin
+              $display("\nCoverage hit 100%%! Stopping the covergroup to save time.");
+              pkt.smart_cg.stop();
+              break; // Exit the repeat loop early because we are finished!
+            end
+
+          end
+        end
+      end
+    endmodule
+            
+/* OUTPUT
+
+--- METHOD 2: CONDITIONS & CROSS COVERAGE ---
+Enable=1 | Addr=3 | Read=1 | Cross Coverage=12.50%
+Enable=0 | Addr=2 | Read=1 | Cross Coverage=12.50%
+Enable=1 | Addr=1 | Read=0 | Cross Coverage=25.00%
+Enable=1 | Addr=1 | Read=1 | Cross Coverage=37.50%
+Enable=0 | Addr=1 | Read=1 | Cross Coverage=37.50%
+Enable=1 | Addr=3 | Read=0 | Cross Coverage=50.00%
+Enable=1 | Addr=0 | Read=1 | Cross Coverage=62.50%
+Enable=0 | Addr=2 | Read=1 | Cross Coverage=62.50%
+Enable=1 | Addr=1 | Read=1 | Cross Coverage=62.50%
+Enable=0 | Addr=2 | Read=0 | Cross Coverage=62.50%
+Enable=0 | Addr=3 | Read=1 | Cross Coverage=62.50%
+Enable=0 | Addr=3 | Read=0 | Cross Coverage=62.50%
+Enable=1 | Addr=3 | Read=0 | Cross Coverage=62.50%
+Enable=1 | Addr=2 | Read=0 | Cross Coverage=75.00%
+Enable=1 | Addr=2 | Read=0 | Cross Coverage=75.00%
+Enable=1 | Addr=3 | Read=0 | Cross Coverage=75.00%
+Enable=1 | Addr=0 | Read=0 | Cross Coverage=87.50%
+Enable=1 | Addr=3 | Read=0 | Cross Coverage=87.50%
+Enable=0 | Addr=0 | Read=1 | Cross Coverage=87.50%
+Enable=0 | Addr=2 | Read=0 | Cross Coverage=87.50%   
