@@ -1,0 +1,72 @@
+class SystemControl;
+      rand bit [3:0] data;
+      rand bit [3:0] addr;
+
+      // --- TOPIC 14: STATIC CONSTRAINT ---
+      // If we turn this off using constraint_mode(0), it turns off for ALL objects.
+      static constraint c_static { data < 5; }
+
+      // --- TOPIC 18: SOFT CONSTRAINT ---
+      // Because it is 'soft', we can easily override it later without causing a conflict.
+      constraint c_soft { soft addr == 10; }
+
+    endclass
+
+    module test_system_control;
+      SystemControl obj1 = new();
+      SystemControl obj2 = new();
+
+      initial begin
+        $display("--- METHOD 4: CONTROL & OVERRIDES ---");
+       
+        repeat(2)begin 
+       // --- TOPIC 17 & 18: INLINE OVERRIDING SOFT CONSTRAINT ---
+        // The class says addr==10. Our inline says addr==2.
+        // Because the class rule is 'soft', it silently accepts addr==2 without failing!
+        void'(obj1.randomize() with { addr == 2; });
+        $display("Soft constraint overridden: addr = %0d", obj1.addr);
+
+        // --- TOPIC 20: RAND_MODE(0) ---
+        // We completely turn off randomization for 'data'.
+        obj1.data.rand_mode(0);
+        void'(obj1.randomize());
+        // 'data' will not change! It keeps its old value.
+        $display("Rand_mode(0) applied: data = %0d", obj1.data);
+
+        // --- TOPIC 19 & 14: CONSTRAINT_MODE(0) ON STATIC CONSTRAINT ---
+        // We turn off 'c_static' using obj1...
+        obj1.c_static.constraint_mode(0);
+        void'(obj2.randomize());
+        // Because it is STATIC, it turned off for obj2 as well!
+        // obj2.data will now generate numbers higher than 5.
+        $display("Static constraint_mode(0) applied to obj2: data = %0d", obj2.data);
+
+        // --- TOPIC 21: RANDCASE ---
+        $display("\n--- RANDCASE ---");
+        // 1, 2, and 3 are the WEIGHTS.
+        // Branch 3 has a 50% chance (3/6). Branch 1 has a 16% chance (1/6).
+        randcase
+          1: $display("Executed Branch 1 (Low Probability)");
+          2: $display("Executed Branch 2 (Medium Probability)");
+          3: $display("Executed Branch 3 (High Probability)");
+        endcase
+
+      end
+      end
+    endmodule
+
+/*OUTPUT
+
+--- METHOD 4: CONTROL & OVERRIDES ---
+Soft constraint overridden: addr = 2
+Rand_mode(0) applied: data = 4
+Static constraint_mode(0) applied to obj2: data = 13
+
+--- RANDCASE ---
+Executed Branch 3 (High Probability)
+Soft constraint overridden: addr = 2
+Rand_mode(0) applied: data = 4
+Static constraint_mode(0) applied to obj2: data = 14
+
+--- RANDCASE ---
+Executed Branch 2 (Medium Probability) */
