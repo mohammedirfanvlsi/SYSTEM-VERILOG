@@ -1,0 +1,69 @@
+class Packet;
+
+      // A 2-bit variable. It can randomly generate 0, 1, 2, or 3.
+      rand bit [1:0] data;
+
+      // A 1-bit variable. It can randomly generate 0 or 1.
+      rand bit       valid;
+
+      // --- DECLARING THE COVERGROUP ---
+      // We name our clipboard (covergroup) "cg".
+      // We don't put @(posedge clk) here because we will trigger it manually.
+      covergroup cg;
+
+        // We name our first question "c_data". It watches the 'data' variable.
+        c_data: coverpoint data;
+
+        // We name our second question "c_valid". It watches the 'valid' variable.
+        c_valid: coverpoint valid;
+
+      endgroup
+
+      // --- BUILDING THE COVERGROUP ---
+      // Just like a class object, a covergroup MUST be built using new()
+      function new();
+        cg = new();
+      endfunction
+
+    endclass
+
+    module test_coverage;
+
+      // Build our Packet object
+      Packet pkt = new();
+
+      initial begin
+        $display("--- METHOD 1: COVERGROUPS & TRIGGERING ---");
+
+        // We will loop 5 times to generate some random traffic
+        repeat (5) begin
+
+          // We safely randomize the variables in our packet.
+          // If it is == 1, it means randomization was successful!
+          if (pkt.randomize() == 1) begin
+
+            // --- TRIGGERING THE COVERAGE ---
+            // Right now, 'data' and 'valid' have new random numbers.
+            // We MUST call .sample() to tell the simulator to look at the numbers!
+            pkt.cg.sample();
+
+            // --- CHECKING OUR SCORE ---
+            // .get_inst_coverage() is a built-in function that calculates the math.
+            // %.2f%% is just formatting to print "25.00%" on the screen.
+            $display("Data = %0d | Valid = %0d | Total Coverage = %.2f%%",
+                     pkt.data, pkt.valid, pkt.cg.get_inst_coverage());
+
+          end
+        end
+      end
+    endmodule
+
+
+/* OUTPUT
+
+# --- METHOD 1: COVERGROUPS & TRIGGERING ---
+# Data = 0 | Valid = 1 | Total Coverage = 37.50%
+# Data = 1 | Valid = 0 | Total Coverage = 75.00%
+# Data = 3 | Valid = 1 | Total Coverage = 87.50%
+# Data = 0 | Valid = 0 | Total Coverage = 87.50%
+# Data = 1 | Valid = 0 | Total Coverage = 87.50% */
