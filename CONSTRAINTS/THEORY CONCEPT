@@ -1,0 +1,249 @@
+ ### The  :/  vs  :=  Operator in  dist
+
+  Interviewer question: "What is the difference between  :=  and  :/  in a distribution?"
+  Answer:
+
+  •  :=  assigns the weight to EVERY individual item in a range.
+  •  :/  DIVIDES the weight equally across the items in a range.
+
+  Example:
+  If we have a range from 1 to 4:  [1:4]  (which is four numbers: 1, 2, 3, 4).
+
+  •  [1:4] := 40  -> 1 gets 40, 2 gets 40, 3 gets 40, 4 gets 40. (Total weight = 160).
+  •  [1:4] :/ 40  -> The 40 is divided by four. So 1 gets 10, 2 gets 10, 3 gets 10, 4 gets 10. (Total weight = 40).
+  ──────
+
+
+
+   Method 1: The Core Randomization & Blocks (Topics 1 to 4)
+
+  Please read the "What, Why, and How" below. I have aligned these perfectly with your course wiki.
+
+  ### 1. Random Function System ( $random ,  $urandom ,  $urandom_range )
+
+  • What it is: These are built-in system tasks that generate a single random number.
+  • Why it is used: Sometimes you don't want to create a whole class. You just need a quick random number for a time delay or a simple variable inside an
+  initial  block.
+  • How it is used:
+      •  $random() : Returns a 32-bit signed number (can be negative).
+      •  $urandom() : Returns a 32-bit unsigned number (always positive).
+      •  $urandom_range(max, min) : Returns a number between max and min.
+      • Interview Note: By default, these generate the exact same random numbers every time you run the simulation. To get different numbers, you have to
+      change the "seed".
+
+
+  ### 2. Random Variables ( rand  and  randc )
+
+  • What it is: Keywords placed before class variables to allow the  randomize()  function to change them.
+  • Why it is used: To automate test generation.
+  • How it is used:
+      •  rand : Non-cyclic. It picks a random value and can repeat it immediately.
+      •  randc : Random-cyclic. It cycles through every single possible value in its range before it is allowed to repeat a value.
+
+
+  ### 3.  std::randomize  (Scope Randomization)
+
+  • What it is: A function that lets you randomize variables that are not inside a class (like a local variable inside a module).
+  • Why it is used: It is highly convenient. You can also give it inline constraints using  with .
+  • How it is used:  std::randomize(variable_name) with { variable_name > 5; };
+      • Interview Note: If you use  std::randomize(this)  inside a class, it randomizes all class variables, BUT a major limitation is it will not
+      randomize variables that are local to a function.
+
+
+  ### 4. Constraint Block ( extern  and Overriding)
+
+  • What it is: The block where you write your boundaries. Your course focuses heavily on two advanced ways to write them:
+      • Extern Constraints: You write  extern constraint name;  inside the class, but you write the actual math rules outside the class.
+      • Constraint Overriding: If a Child class and a Parent class have a constraint with the exact same name, the Child's constraint will override
+      (delete and replace) the Parent's constraint.
+  • Why it is used:  extern  keeps your class code neat and clean. Overriding is used when you want to reuse a Parent class for a test, but need to tweak
+  the rules slightly.
+
+
+
+  ### 1. What does "local to a function" mean?
+
+  It means a variable that is created inside a  function ... endfunction  block, rather than at the top of the class.
+
+  Look at this structure:
+
+    class MyClass;
+      int class_var;       // <--- Belongs to the whole class
+
+      function void my_function();
+        int function_var;  // <--- This is LOCAL to the function.
+                           // It only exists while the function is running!
+      endfunction
+    endclass
+
+  ### 2. Can  std::randomize  be used in a class?
+
+  Yes, absolutely! In fact, your course wiki teaches two different ways to use it inside a class.
+
+  Way #1:  std::randomize(this)
+  When you are inside a class method, the keyword  this  means "this entire class".
+  If you write  std::randomize(this); , the random engine looks at your class and says, "Okay, I will randomize  class_var !"
+
+  Here is the limitation your course mentioned:
+  Because you told it to randomize  this  (the class), the engine completely ignores  function_var ! It doesn't see it, because  function_var  belongs to
+  the function, not the class.
+
+  Way #2:  std::randomize(variable_name)
+  If you do want to randomize that local function variable, you just have to ask for it by name! You can write  std::randomize(function_var); .
+
+  ### Let's see the exact code for this!
+
+  Here is a small, crystal-clear example showing exactly how this works inside a class:
+
+    class TestClass;
+      // This belongs to the class
+      int A;
+
+      function void test_std_randomize();
+        // This is LOCAL to the function
+        int B;
+
+        // 1. Randomize "this" (The Class)
+        // This will successfully randomize 'A', but it will IGNORE 'B'.
+        if (std::randomize(this)) begin
+          $display("std::randomize(this) executed! A = %0d", A);
+        end
+
+        // 2. Randomize the local variable explicitly
+        // Because 'this' ignored B, we have to randomize B manually.
+        // We can also add an inline constraint!
+        if (std::randomize(B) with { B inside {[1:5]}; }) begin
+          $display("std::randomize(B) executed! B = %0d", B);
+        end
+
+      endfunction
+    endclass
+
+    module tb;
+      TestClass t_handle = new();
+
+      initial begin
+        // Call the function inside the class
+        t_handle.test_std_randomize();
+      end
+    endmodule
+
+  ### Summary
+
+  • In a module: You use  std::randomize(var)  to randomize random variables floating in your module.
+  • In a class: You use  std::randomize(this)  to randomize the class variables (even ones that don't have the  rand  keyword!). But you must remember
+  that  this  ignores local function variables, so you have to randomize those separately.
+
+
+
+   Method 2: Array Randomization (Topic 5, 12, 22)
+  ### 1. Static Array Randomization
+
+  • What it is: An array where the size is fixed (e.g.,  byte a[7] ).
+  • Why it is used: When your hardware has a fixed amount of memory or a fixed number of ports, you use a static array.
+  • How it is used: Because the size is fixed, the random engine will only randomize the values inside the array. You can randomize 1D arrays or Multi-
+  dimensional arrays (like  a[2][4] ).
+  • The  .sum()  trick (FROM YOUR WIKI): Your wiki introduces  a.sum() with (int'(item)) == 12; . This is a very common test question! It means "Add up
+  all the numbers in the array, and the total sum MUST equal 12."  item  is a built-in keyword that points to each element.
+
+  ### 2. Dynamic Array Randomization
+
+  • What it is: An array with no predefined size (e.g.,  bit [7:0] dyn_arr[] ).
+  • Why it is used: When you are generating packets of data that can be different lengths (like network traffic).
+  • How it is used: You must constrain two things:
+      1. The size of the array, using  dyn_arr.size() . (If you don't constrain the size, it might generate an empty array of size 0!).
+      2. The elements inside the array, using a  foreach  loop.
+
+
+  ### 3. Queue Randomization
+
+  • What it is: A flexible array that can grow or shrink, declared with  [$] .
+  • Why it is used: Used heavily in testbenches to store transactions waiting to be sent to the hardware.
+  • How it is used: Exactly like a dynamic array. You constrain the size using  .size() , and the elements get random values.
+
+    ### 2. What does  stat_arr.sum() with (int'(item)) == 12;  mean?
+
+  Let's break it down into plain English:
+
+  •  stat_arr  has 3 items (let's call them Box 0, Box 1, and Box 2).
+  •  .sum()  is a built-in math function. It means "Add the values in all the boxes together."
+  •  == 12  means the total sum of the boxes MUST equal exactly 12. (For example, the random engine might generate  [4, 4, 4] , or  [10, 1, 1] ).
+  • What is  (int'(item)) ?
+      •  item  is a special built-in keyword that means "the value currently inside the box".
+      • Because our boxes are only 5-bits wide ( [4:0] ), if we add them together, the math might overflow (get too big for 5 bits).  int'(...)  tells
+      the compiler, "Hey, treat these numbers as large 32-bit integers while you are doing the math so it doesn't break."
+
+
+
+  Method 3: Conditional Rules & Solving Order (Topics 9, 10, 11, 13, 16)
+
+  ### 1. Bidirectional Constraint (Topic 9)
+
+  • What it is: This is a concept. It means constraints are solved parallelly (at the exact same time), not sequentially (top-to-bottom).
+  • Why it is used: To ensure the random engine doesn't accidentally break a rule. It looks at the "big picture" of all your rules before it picks a
+  single number.
+  • How it works: If you write  a < 10  on line 1, and  a > 5  on line 100, the engine sees both simultaneously and smartly picks a number between 6 and
+  9.
+
+  ### 2. Implication Constraint  ->  (Topic 10)
+
+  • What it is: A conditional rule. It uses the  ->  operator.
+  • Why it is used: When a rule should only apply in certain situations.
+  • How it works:  (LHS) -> (RHS) . Read this as "If the Left Side is true, then the Right Side MUST be true." If the Left Side is false, the engine
+  ignores the Right Side entirely.
+
+  ### 3. If-Else Constraint (Topic 11)
+
+  • What it is: A standard  if-else  block placed inside a constraint.
+  • Why it is used: It does the exact same job as the Implication operator ( -> ), but it is much easier to read when you have complex, multi-line
+  conditions.
+  • How it works:  if (condition) { rules } else { rules } .
+
+  ### 4. Solve Before Constraint (Topic 13)
+
+  • What it is: A rule that forces the random engine to calculate the probability of one variable before calculating the probability of another.
+  • Why it is used: Because the solver is bidirectional (Topic 9), sometimes probabilities get skewed.  solve A before B  tells the engine, "Figure out a
+  fair random value for A first, and then let B react to it."
+  • WIKI CROSS-CHECK (Important for Interviews!): Your wiki notes a brilliant limitation here: You cannot use  randc  variables with  solve before . Why?
+  Because  randc  variables are naturally always solved first by the simulator anyway. If you try to use  solve before  on a  randc  variable, it causes
+  an error or gets ignored!
+
+  ### 5. Constraint Conflict (Topic 16)
+
+  • What it is: A logical contradiction in your code. (e.g.,  a > 10  and  a < 5 ).
+  • Why it happens: Usually by accident when you inherit a class or apply inline constraints.
+  • How it is handled: SystemVerilog cannot solve a contradiction. The  .randomize()  function will immediately fail and return  0 .
+
+
+
+  Method 4: Overrides & System Control
+
+  ### 1. Static Constraint (Topic 14)
+
+  • What it is: A constraint declared with the  static  keyword.
+  • Why it is used: By default, every object (copy) of a class has its own independent rules. If you make a constraint  static , that rule is shared
+  across all objects of that class.
+  • How it works: If you have 5 objects of a class, and you turn off a  static  constraint in one object, it immediately turns off for all 5 objects.
+
+  ### 2. Inline vs. Soft Constraints (Topics 17 & 18)
+
+  • Inline Constraint: Using  randomize() with { new_rule; } . This adds a temporary rule just for this one randomization.
+      • The Problem (Conflict): If your class says  a > 10  and your inline rule says  a < 5 , they conflict! Randomization fails and returns  0 .
+  • Soft Constraint: To fix the conflict above, you declare the class rule as  soft a > 10; .
+      • The Solution: "Soft" means "Follow this rule normally, BUT if an inline rule contradicts it, delete this soft rule and obey the inline rule
+      instead." It prevents failures!
+
+
+  ### 3. Disable Constraints & Randomization (Topics 19 & 20)
+
+  • What they are: Built-in methods to turn things completely off.
+  • How they work:
+      •  constraint_mode(0) : Turns off a specific rule. The variable will still get a random number, but it will ignore that rule.
+      •  rand_mode(0) : Turns off the variable itself! The variable will no longer be randomized at all (it will just keep whatever value it currently
+      has).
+
+
+  ### 4.  randcase  (Topic 21)
+
+  • What it is: It looks like a normal  case  statement, but instead of checking a condition, it randomly executes one of the branches based on weights.
+  • Why it is used: It is used to randomize behaviors (like executing tasks) rather than just randomizing variables.
