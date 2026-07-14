@@ -1,0 +1,173 @@
+class AdvancedPacket;
+      rand bit [3:0] data;
+      rand bit [1:0] state; // 0=Idle, 1=Run, 2=Stop
+
+      covergroup adv_cg;
+        option.per_instance = 1;
+        option.at_least = 3;
+
+        c_data: coverpoint data {
+          wildcard bins b_high_bits = {4'b11??};
+        }
+
+        c_state: coverpoint state {
+          bins b_sequence = (0 => 1 => 2);
+        }
+      endgroup
+
+      function new();
+        adv_cg = new();
+      endfunction
+    endclass
+
+    module test_advanced;
+      AdvancedPacket pkt = new();
+
+      initial begin
+
+        // We don't force anything! We just loop 500 times and
+        // let the randomizer do all the hard work naturally.
+        repeat (500) begin
+
+          if (pkt.randomize() == 1) begin
+
+            // Take a picture of whatever random numbers were just generated
+            pkt.adv_cg.sample();
+
+         
+
+        // After 500 random loops, we check if we got lucky enough to
+        // hit the wildcard 3 times, and the sequence 3 times!
+        $display("DATA : %0d| STATE :%0d | FINAL COVERAGE = %.2f%%",pkt.data,pkt.state,pkt.adv_cg.get_inst_coverage());
+            
+             end
+
+        end
+
+      end
+    endmodule
+
+/* OUTPUT 
+
+# DATA : 5| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 0| STATE :1 | FINAL COVERAGE = 0.00%
+# DATA : 10| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 5| STATE :2 | FINAL COVERAGE = 0.00%
+# DATA : 4| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 6| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 0.00%
+# DATA : 0| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 15| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 2| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 9| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 4| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 11| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 1| STATE :2 | FINAL COVERAGE = 0.00%
+# DATA : 4| STATE :1 | FINAL COVERAGE = 0.00%
+# DATA : 6| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 9| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 9| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 9| STATE :1 | FINAL COVERAGE = 0.00%
+# DATA : 9| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 15| STATE :3 | FINAL COVERAGE = 0.00%
+# DATA : 3| STATE :0 | FINAL COVERAGE = 0.00%
+# DATA : 13| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 6| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 6| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 7| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 1| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 13| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 12| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 1| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 13| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 7| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 13| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 8| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 6| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 7| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 7| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 7| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 5| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 3| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 1| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 1| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 0| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 6| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :2 | FINAL COVERAGE = 50.00%
+# DATA : 9| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :3 | FINAL COVERAGE = 50.00%
+# DATA : 11| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 2| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 14| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 15| STATE :0 | FINAL COVERAGE = 50.00%
+# DATA : 10| STATE :1 | FINAL COVERAGE = 50.00%
+# DATA : 4| STATE :2 | FINAL COVERAGE = 100.00% */
