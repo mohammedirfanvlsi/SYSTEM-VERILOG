@@ -1,0 +1,189 @@
+  Functional Coverage - Method 1: The Basics & Triggering
+
+  ### 1. Code Coverage vs. Functional Coverage
+
+  • What it is:
+      • Code Coverage is calculated automatically by the simulator. It literally just checks, "Did the simulator execute line 42 of your code?"
+      • Functional Coverage is written manually by you. It checks, "Did my random testbench actually generate a VIP packet and send it to Address 0?"
+  • Why it is used: Code coverage might be 100% (every line of code was executed), but if you forgot to write the code for a specific feature, Code
+  Coverage won't know! We use Functional Coverage to guarantee that our random values hit all the rules in the design specification.
+
+  ### 2. Covergroups and Coverpoints
+
+  • What it is:
+      • A  covergroup  is a custom block of code. Think of it as a physical Clipboard with a Checklist.
+      • A  coverpoint  goes inside the covergroup. Think of it as a Specific Question on that checklist (e.g., "Did variable  a  hit the value 3?").
+  • Where it is used: A covergroup can be written in 3 places:
+      1. Inside a  class  (Most common)
+      2. Inside a  module
+      3. Outside entirely
+  • Syntax:
+    covergroup my_checklist;
+      question_1 : coverpoint my_variable;
+    endgroup
+    Important: Just like a class, writing the  covergroup  only creates the blueprint. You MUST use  new()  to build it in memory (e.g.,  my_checklist =
+  new(); ).
+
+  ### 3. Triggering a Covergroup
+
+  • What it is: The simulator does not check your variables constantly. You have to tell it exactly when to look at the variables and tick the boxes on
+  the checklist.
+  • How it is used: There are 3 ways to trigger it:
+      1. Manual Trigger: Calling the built-in  .sample()  function in your code.
+      2. Clock Edge: Telling the covergroup to trigger automatically on a clock tick:  covergroup cg @(posedge clk);
+      3. Event: Telling the covergroup to trigger when an event happens:  covergroup cg @(my_event.triggered);
+
+
+ Here is the Golden Rule of SystemVerilog Covergroups:
+
+  • If you write the covergroup inside a class, it is permanently locked to that class. You MUST build its memory from inside that class (which is why we
+  always put it inside  function new() ). If you go out to the module and try to type  pkt.cg = new(); , the simulator will reject it.
+  • If you write the covergroup outside in a module, then you must build its memory outside in the module.
+
+  Basically: You must build the memory in the exact same place where you wrote the covergroup!
+
+
+
+   Functional Coverage - Method 2: Conditions, Control, & Cross Coverage
+
+  In Method 1, our checklist was very basic. It just tracked every single number that was generated. But in real verification, we want our checklists to
+  be smart. We want them to only track things under specific conditions.
+
+  ### 1. Conditional Coverage ( iff  keyword)
+
+  • What it is: A rule that tells the coverpoint to completely ignore values unless a specific condition is true. ( iff  stands for "if and only if").
+  • Why it is used: Imagine a memory chip with an  address  variable and an  enable  pin. If the  enable  pin is  0 , the memory is turned off. We
+  absolutely do not care what the  address  is when the chip is turned off! So, we tell the coverpoint to only track the address  iff (enable == 1) .
+  • Syntax:
+   coverpoint variable_name iff (condition);
+
+  ### 2. System Control ( start  and  stop  functions)
+
+  • What they are: Built-in functions that act like a "Pause" and "Play" button for your entire covergroup.
+  • Why it is used: To save simulation time! If you have hit 100% coverage, there is no reason to keep checking the boxes on the clipboard. You can write
+  an  if  statement in your code: "If coverage == 100, then call  .stop()  to pause the checklist."
+  • Syntax:
+   cg_inst.stop();  or  cg_inst.start();
+
+  ### 3. Cross Coverage (Guaranteed Interview Question)
+
+  • What it is: Instead of tracking variables independently, Cross Coverage tracks the combination of two or more coverpoints at the exact same time.
+  • Why it is used: Let's look at a problem:
+      • You have a coverpoint for Address (0, 1, 2, 3). You hit all of them. (Coverage = 100%)
+      • You have a coverpoint for Action (READ, WRITE). You hit both of them. (Coverage = 100%)
+      • The Problem: Did you ever test a WRITE to Address 3? You don't know! You tested Address 3, and you tested Write, but maybe never at the same
+      time!
+      • The Solution: You  cross  the two coverpoints together to track every single possible combination (e.g., Read-0, Write-0, Read-1, Write-1...).
+  • Syntax:
+   cross coverpoint_1, coverpoint_2;
+
+
+  Functional Coverage - Method 3: Bins (Explicit, Ignore, and Illegal)
+
+  ### What exactly is a "Bin"?
+
+  Let's go back to our parking lot analogy. If a  coverpoint  is a column on your clipboard (like "Car Colors"), a Bin is a specific checkbox inside that
+  column (like Checkbox 1: Red, Checkbox 2: Blue).
+  Every time your randomizer generates a number, the simulator drops a tally mark into the correct bin.
+
+  ### 1. Automatic Bins (Implicit Bins)
+
+  • What it is: If you don't write any bins yourself, the simulator automatically creates one bin for every single possible value.
+  • The Problem: If your variable is a 32-bit address, there are 4 billion possible numbers. If you use Automatic Bins, your computer will try to create
+  4 billion checkboxes and it will run out of memory!
+      • Note: By default, the simulator limits automatic bins to 64. You can change this using  option.auto_bin_max , which we will cover later!
+
+
+  ### 2. Explicit Bins (Manual Bins)
+
+  • What it is: Instead of letting the simulator create a bin for everything, you explicitly tell it exactly which numbers you care about.
+  • Why it is used: "I have a 32-bit address, but I am only testing Address 10 and Address 20 today. Only give me coverage percentages for those two
+  numbers."
+  • Syntax:  bins bin_name = {value};  or  bins bin_name = {[range]};
+
+  ### 3. Ignore Bins ( ignore_bins )
+
+  • What it is: A bin that tells the simulator to completely ignore specific values.
+  • Why it is used: Let's say you have a 2-bit variable (0, 1, 2, 3), but your hardware is physically incapable of processing the number  3 . You tell
+  the simulator to  ignore_bins bad_num = {3}; . Now, the total coverage math is only calculated out of 3 bins instead of 4!
+
+  ### 4. Illegal Bins ( illegal_bins )
+
+  • What it is: The most powerful debugging bin. If the simulator hits an illegal bin, it immediately crashes the simulation and prints a Fatal Error.
+  • Why it is used: Imagine a State Machine. State 0 is Idle, State 1 is Run. If the State variable somehow becomes  99 , your hardware is critically
+  broken! You put  99  in an illegal bin to instantly catch the bug.
+  ──────
+
+ ### 3. "Why are you using  .sample()  two times? One time is enough, na?"
+
+  No, one time is NOT enough! This is a very important rule in SystemVerilog.
+  Think of  .sample()  like a camera shutter button.
+  If you randomize variables 10 times, the variables change 10 times. But if you only click  .sample()  once at the very end, the simulator only takes
+  one picture and misses the other 9 numbers!
+  Rule: Every single time you generate new random numbers, you MUST press the shutter button ( .sample() ) to record those new numbers.
+
+  ### 4. "Bin means we are checking coverage for a particular value, that's it?"
+
+  YES! EXACTLY. That is the perfect definition.
+  If you don't write any bins, the simulator checks the coverage for every single number in the world.
+  By writing  bins b1 = {2}; , you are saying: "I only care about checking the coverage for the number 2. I don't care about anything else."
+
+
+   Functional Coverage - Method 4: Transitions, Wildcards, & Options
+
+  ### 1. Transition Bins ( => )
+
+  • What it is: Instead of checking if a single number happened, a Transition Bin checks if a sequence of numbers happened in exact order over time.
+  • Why it is used: To test State Machines! For example, a traffic light. You don't just want to know if the light turned Green (1), Yellow (2), and Red
+  (3). You need to prove that it went exactly  1 -> 2 -> 3 . If it goes  1 -> 3 , that is a bug!
+  • Syntax:  bins my_sequence = (1 => 2 => 3);
+
+  ### 2. Wildcard Bins ( wildcard bins )
+
+  • What it is: A bin that uses the  ?  character to say "I don't care what this specific bit is."
+  • Why it is used: Imagine a 4-bit binary number  (1001) . You want to test if the top two bits are  11 . You don't care what the bottom two bits are.
+  Instead of writing out every single combination ( 1100 ,  1101 ,  1110 ,  1111 ), you just use wildcards!
+  • Syntax:  wildcard bins top_bits = {4'b11??};  (This single bin automatically accepts 12, 13, 14, and 15).
+
+  ### 3. Coverage Options ( option. )
+
+  • What it is: Special commands you write inside the covergroup that change how the simulator calculates the math. We already used one! ( option.
+  per_instance = 1 ). Here are the other important ones:
+      1.  option.at_least = 5;  (The most common one!)
+          • Normally, if a bin is hit one time, the simulator checks the box and says "100% Covered". By setting  at_least = 5 , you are telling the
+          simulator: "Do NOT check this box until the randomizer generates this number 5 times!"
+      2.  option.auto_bin_max = 10;
+          • If you don't write explicit bins, the simulator creates "Automatic Bins". To prevent your computer from running out of memory on a 32-bit
+          variable, you limit it. "Only create 10 automatic bins maximum."
+
+
+
+ ### 1. The Transition Bin Syntax
+
+  You asked for the exact syntax for transition bins. Here is how it is built:
+   bins <bin_name> = (<value1> => <value2>);
+
+  The  =>  symbol is called the Transition Operator. You can literally read it out loud in English as "followed by on the next sample".
+
+  •  bins state_test = (0 => 1);
+      • Read this as: "I want to track if the state was  0 , followed by the state being  1  on the very next  .sample() ."
+
+
+  ### 2. Deep Dive:  option.per_instance = 1;
+
+  In SystemVerilog, you can create 100 different  Packet  objects ( pkt1 ,  pkt2 ...  pkt100 ).
+
+  • Without this line: The simulator is lazy. It takes the checklists from all 100 packets, mashes them together into one giant pile, and only gives you
+  one "Global Score". It is impossible to ask, "What is the score for just  pkt1 ?"
+  • With this line:  per_instance  means "Calculate the math for each individual object." Now, the simulator gives every single packet its own private
+  checklist. You can ask for  pkt1.cg.get_inst_coverage()  and it will give you the exact score for just that one packet.
+  (Note: We almost ALWAYS use this line in the industry!)
+
+  ### 3. Deep Dive:  option.at_least = 3;
+
+  This changes the math of how you reach 100%.
+
+  • Without this line: If a number drops into a bin just 1 time, the simulator checks the box and says "Great, 100% Covered!"
+  • With this line: You are being more strict. If the number drops into the bin 1 time, the simulator says "Not good enough, that's only 33% covered." If
+  it hits 2 times, it says "66% covered." It will not check the box and say "100% Covered" until that specific number drops into the bin 3 times. It is
+  used when you want to heavily stress-test a specific value multiple times.
