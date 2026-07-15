@@ -1,0 +1,88 @@
+module ex;
+  
+  bit clk;
+  bit req_a;
+  bit ack_a;
+  
+  bit req_b;
+  bit ack_b;
+  
+  always #5 clk = ~clk;
+  
+  
+   // ====================================================
+      // TYPE 6: FORMAL ARGUMENTS
+      // ====================================================
+
+      // Step 1: Create a Property with Formal Arguments (Placeholders)
+      // We create two generic placeholders: 'r' and 'a'
+  
+  property cg(r,a);
+    
+    @(posedge clk)
+    
+     // The Rule uses the placeholders!
+    
+    (r == 1) |-> ##2 (a == 1);
+    
+  endproperty
+  
+   // Step 2: Turn the guards ON and PASS the actual signals into them!
+
+      // Guard for Bank A: We pass 'req_A' into 'r', and 'ack_A' into 'a'
+  
+  formal : assert property (cg(req_a,ack_a))
+    
+    $display("[%0t] PASS : A assertion",$time);
+    
+    else
+      
+      $error("[%0t] FAIL : A ASSERTION FAILED",$time);
+    
+          // Guard for Bank B: We pass 'req_B' into 'r', and 'ack_B' into 'a'
+    
+    formal_ff : assert property (cg(req_b,ack_b))
+      
+      $display("[%0t] PASS: B ASSERTION",$time);
+      
+      else
+        
+        $error("[%0t] FAIL : B ASSERTION FAILED",$time);
+      
+      
+      initial begin
+        
+        req_a = 0; ack_a = 0;
+        req_b = 0; ack_b = 0;
+        
+        @(posedge clk);
+        
+        req_a = 1;
+        repeat(2)@(posedge clk );
+        ack_a = 1;
+        
+       
+        req_a = 0;
+        
+        @(posedge clk);
+        req_b = 1;
+        repeat(2)@(posedge clk);
+        ack_b = 1;
+        
+        repeat(3)@(posedge clk);
+        
+        $finish;
+        
+      end
+      endmodule
+   
+      
+ /* OUTPUT 
+ 
+# [35] PASS : A assertion
+# [45] PASS : A assertion
+# [65] PASS: B ASSERTION
+# [75] PASS: B ASSERTION */
+             
+    
+    
