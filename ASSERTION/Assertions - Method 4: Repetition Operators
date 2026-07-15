@@ -1,0 +1,107 @@
+module ex;
+  
+  bit clk;
+  bit req;
+  bit ack;
+  
+  always #5 clk = ~clk;
+  
+   // ====================================================
+      // TYPE 4: REPETITION OPERATORS
+      // ====================================================
+  
+   // --- Rule 1: Consecutive [*] ---
+  
+  sequence cons;
+    
+     // Read this as: "IF req is 1, THEN ack MUST be 1 for exactly 3 clocks IN A ROW."
+    
+    (ack == 1)[*3];
+    
+  endsequence
+  
+  // --- Rule 2: Go-To [->] ---
+  
+  sequence conss;
+    
+            // Read this as: "IF req is 1, THEN ack MUST be 1 exactly 3 times (gaps are okay)."
+    
+    (ack == 1)[->3];
+  endsequence
+  
+  property consecutive;
+    
+    @(posedge clk)
+    
+    (req == 1) |-> cons;
+  endproperty
+  
+  property goto;
+    
+    @(posedge clk)
+    (req == 1) |-> conss;
+  endproperty
+  
+  c_cons : assert property (consecutive)
+    
+    $display("[%0t] PASS: THE ACK 1 FOR FOR THREE CYCLES CONTINUOUSLY",$time);
+    
+    else 
+      
+      $error("[%0t]  FAILED : THE ACK 1 FOR THREE CYCLE WITHOUT CONTINUOSLY",$time);
+    
+    c_conss : assert property (goto)
+      
+      $display("[%0t] PASS :THE ACK 1 FOR THREE CYCLE WITH GAP ",$time);
+      
+      else
+        
+        $error("[%0t] FAILED : THE ACK 1 FOR THREE CYCLE NOT HIT",$time);
+      
+      initial begin
+        
+        req = 0; ack = 0; 
+        
+        @(posedge clk);
+        
+        req = 1;
+        @(posedge clk);
+        req = 0;
+        
+        ack = 1;
+        @(posedge clk);
+        
+         ack = 0;
+        @(posedge clk);
+        
+         ack = 1;
+        @(posedge clk);
+        
+         ack = 0;
+        @(posedge clk);
+        
+         ack = 1;
+        @(posedge clk);
+        
+         ack = 1;
+        @(posedge clk);
+        
+         ack = 1;
+        @(posedge clk);
+        
+         ack = 1;
+        @(posedge clk);
+        
+        
+        
+        repeat(3)@(posedge clk);
+        
+        $finish;
+        
+      end
+      endmodule
+      
+      /* OUTPUT 
+      
+      [15]  FAILED : THE ACK 1 FOR THREE CYCLE WITHOUT CONTINUOSLY
+[65] PASS :THE ACK 1 FOR THREE CYCLE WITH GAP  */
