@@ -1,0 +1,75 @@
+ module test_method_5;
+
+      bit clk;
+      bit reset; // Our kill switch!
+      bit req;
+      bit ack;
+
+      always #5 clk = ~clk;
+
+      // ====================================================
+      // TYPE 5: DISABLE IFF (The Kill Switch)
+      // ====================================================
+
+      property reset_prop;
+        @(posedge clk)
+
+        // THE KILL SWITCH: If reset == 1, turn this assertion OFF!
+        // It will ignore everything that happens on the right side.
+        disable iff (reset == 1)
+
+        // The Rule: IF req is 1, THEN ack must be 1 two clocks later
+        (req == 1) |-> ##2 (ack == 1);
+
+      endproperty
+
+      // Turn the guard ON
+      c_reset: assert property (reset_prop)
+        $display("[%0t] PASS: Rule followed safely!", $time);
+      else
+        $error("[%0t] FAIL: Rule broken!", $time);
+
+
+      // ====================================================
+      // TEST STIMULUS
+      // ====================================================
+      initial begin
+        req = 0; ack = 0; reset = 0;
+
+        // --- SCENARIO 1: NORMAL FAILURE ---
+        // We send a Request, but we NEVER send an Ack!
+        // Because reset is 0, the assertion will throw an ERROR.
+        req = 1;
+        repeat(2) @(posedge clk);
+        // (We forgot to set ack = 1 here!)
+        $display("[%0t] (Assertion should throw an ERROR right now)", $time);
+
+
+        // --- SCENARIO 2: USING THE KILL SWITCH ---
+        req = 0;
+        repeat(2) @(posedge clk);
+
+        // Turn the kill switch ON!
+        reset = 1;
+
+        // We send a Request, but we NEVER send an Ack!
+        req = 1;
+        repeat(2) @(posedge clk);
+        // (We forgot to set ack = 1 here too!)
+
+        // BUT because reset == 1, the assertion is DISABLED!
+        // It will NOT throw an error!
+        $display("[%0t] (Assertion is SILENT! The kill switch worked!)", $time);
+
+        #10;
+        $finish;
+      end
+
+    endmodule
+        
+ /* OUTPUT 
+ 
+ # [15] (Assertion should throw an ERROR right now)
+# ** Error: [25] FAIL: Rule broken!
+#    Time: 25 ns Started: 5 ns  Scope: test_method_5.c_reset File: testbench.sv Line: 33
+# [55] (Assertion is SILENT! The kill switch worked!) */
