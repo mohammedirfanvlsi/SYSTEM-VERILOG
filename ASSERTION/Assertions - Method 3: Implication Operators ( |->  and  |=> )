@@ -1,0 +1,73 @@
+module test_method_2;
+
+      // --- 1. DECLARE SIGNALS ---
+      bit clk;
+      bit req; // Request signal
+      bit ack; // Acknowledge signal
+
+      // --- 2. CLOCK GENERATION ---
+      always #5 clk = ~clk;
+
+      // ====================================================
+      // TYPE 2: CONCURRENT ASSERTION WITH TIMING DELAY
+      // ====================================================
+
+      // Step 1: Define the timeline of events using 'sequence'
+      sequence req_ack_seq;
+
+        // The Rule: 'req' must be 1.
+        // Then, WAIT exactly 2 clock cycles (##2).
+        // Then, 'ack' must be 1.
+        ##2 (ack == 1);
+
+      endsequence
+
+      // Step 2: Put the timeline inside a property and tie it to the clock
+      property req_ack_prop;
+        @(posedge clk) (req == 1) |-> req_ack_seq;
+      endproperty
+
+      // Step 3: Turn the guard ON!
+      timing_guard: assert property (req_ack_prop)
+        $display("[%0t] PASS: Ack arrived exactly 2 clocks after Req!", $time);
+      else
+        // NOTE: This will print an error anytime the rule is broken!
+        $error("[%0t] FAIL: Timing rule broken!", $time);
+
+
+      // ====================================================
+      // TEST STIMULUS (Driving the values)
+      // ====================================================
+      initial begin
+
+        // Initialize signals to 0
+        req = 0; ack = 0;
+
+        // Wait a bit before starting
+       @(posedge clk);
+
+        $display("--- TEST 1: PERFECT TIMING ---");
+        // We send the Request!
+        req = 1;
+
+        // We wait EXACTLY 2 clock cycles (20ns total, since clk period is 10ns)
+         repeat(2)@(posedge clk);
+
+        // Exactly 2 clocks later, we send the Acknowledge!
+        // The assertion will PASS because the timing was perfect.
+        ack = 1;
+
+        // Wait to let the simulator print the PASS message
+       repeat(2)@(posedge clk);
+
+        $finish;
+      end
+
+    endmodule
+        
+  /* OUTPUT 
+  
+  --- TEST 1: PERFECT TIMING ---
+[35] PASS: Ack arrived exactly 2 clocks after Req! */
+        
+ 
