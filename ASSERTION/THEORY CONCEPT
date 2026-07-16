@@ -1,0 +1,711 @@
+ ### 1. What is an Assertion?
+
+  • Simple Explanation: An assertion is like a strict Security Guard or Referee that you place directly inside your code. It constantly
+  watches your signals. If any signal breaks the rules, the referee immediately blows the whistle, yells "ERROR!", and can stop the
+  simulation.
+  • Proper Definition (For an Interview): "An assertion is a piece of code embedded in a design that continuously validates the intended
+  behavior of the system. If a specified condition evaluates to false, the assertion fails and reports an error."
+
+  ### 2. Why do we use it? (The "Debugging Nightmare")
+
+  • The Problem: Imagine a complex CPU. At  10ns , a tiny internal wire gets the wrong value. However, the simulation keeps running! At
+  5000ns , the final output on your screen prints the wrong answer. Now, you have to spend 3 days reading waveforms backwards from  5000ns
+  all the way to  10ns  to find out where the bug started!
+  • The Solution (Why we use Assertions): We place an assertion directly on that tiny internal wire. Now, when that wire gets the wrong value
+  at  10ns , the assertion immediately crashes the test at exactly 10ns.
+  • Proper Definition (For an Interview): "We use assertions to improve observability and drastically reduce debugging time. Assertions catch
+  bugs at their source the exact moment they happen, instead of waiting for the bug to propagate to the final output."
+
+  ### 3. How do we use it?
+
+  • Simple Explanation: We write a specific rule (like "A must always equal B"), and we attach an alarm to it. We then tell the simulator to
+  turn the alarm on ( assert ).
+  • How it works in practice:
+      1. We define the rule we want to test.
+      2. We use the  assert  keyword to turn the check on.
+      3. We define the Severity Level (How loud the alarm should be). We have 4 choices:
+          •  $info  : Just prints a friendly message. (Does not stop simulation).
+          •  $warning  : Prints a warning. (Does not stop simulation).
+          •  $error  : Prints a red error. (Default severity, does not stop simulation).
+          •  $fatal  : The loudest alarm! Immediately crashes and stops the simulation.
+
+──────
+   Assertions - Method 1: Immediate vs Concurrent
+
+  ### 1. Immediate Assertions
+
+  • What it is: A basic security guard that only checks the rules at the exact millisecond the code is executed. It works exactly like a
+  normal  if  statement.
+  • Why it is used: To do a quick, simple check on combinatorial logic or simple values.
+  • The Limitation: It has no concept of time! If you ask an Immediate Assertion, "Did the request signal go high 3 clock cycles ago?" it
+  will fail because it cannot look into the past or the future.
+  • Syntax:
+   assert (condition) pass_message else fail_message;
+
+  ### 2. Concurrent Assertions (The Real Power of SVA)
+
+  • What it is: An advanced security guard that understands time. It runs continuously in the background in parallel with your other code,
+  constantly watching the clock.
+  • Why it is used: Almost everything in hardware design involves time! (e.g., "If I send a read request, the data MUST arrive exactly 2
+  clock cycles later."). Only a Concurrent Assertion can test this.
+  • How it is built: It uses a 3-step building block:
+      1. Sequence: Define the timing relationship (e.g., Signal A, then wait 2 clocks for Signal B).
+      2. Property: Put the sequence inside a property and tie it to a  clock  so it knows how fast to count.
+      3. Assert: Turn the property on.
+
+
+  ### 1. What is  immediate_guard: ?
+
+  It is not a variable! It is just a Label (a name).
+  In SystemVerilog, you are allowed to give a name to your assertion by putting a name and a colon ( : ) in front of it.
+
+  •  my_cool_name: assert(A == 1);
+  • Why do we do this? If you have 100 assertions and one of them fails, the simulator error log will say "Assertion my_cool_name failed!" If
+  you don't use labels, the simulator will just say "Assertion #87 failed" and you won't know which one it is!
+
+  ### 2. How can you write  else  without an  if ?
+
+  This is a very special rule for Assertions!
+  In normal coding, you are right:  else  must always follow an  if .
+  But the  assert  keyword is special. It acts exactly like an  if  statement built into one word.
+  You literally read it in English like this: "Assert that this is true, Else print an error!"
+  ──────
+  Now, let's restart Method 1 exactly the way you requested.
+
+   Method 1: Immediate vs Concurrent Assertions
+
+  ## PART A: Immediate Assertions
+
+  • What is it?
+      • Simple: It is a basic check that happens instantly at one exact moment in time.
+      • Proper Definition: An immediate assertion is a test of an expression performed when the statement is executed in the procedural code.
+      If it evaluates to false, the assertion fails.
+  • Why is it used? We use it to do quick, simple math checks or check simple combinatorial logic where we don't care about the clock.
+  • How is it used? You must put it inside a procedural block (like an  always  block or  initial  block).
+  • Syntax:
+    // [label:] assert (condition) [pass_statement] else [fail_statement];
+
+    always @(posedge clk) begin
+      my_label: assert (A == B) $display("Pass!"); else $error("Fail!");
+    end
+
+
+  ## PART B: Concurrent Assertions
+
+  • What is it?
+      • Simple: It is an advanced check that watches your signals continuously over time. It always needs a clock!
+      • Proper Definition: A concurrent assertion checks the sequence of events spread over multiple clock cycles. It executes in parallel
+      with other blocks and is evaluated only at clock ticks.
+  • Why is it used? Hardware takes time! If a signal must stay high for 5 clock cycles, an Immediate assertion cannot check that. Only a
+  Concurrent assertion can measure time.
+  • How is it used? You build a  property  to hold the timing rule and the clock. Then, you use  assert property  outside of your always
+  blocks to turn it on.
+  • Syntax:
+    // 1. Create the rulebook (property)
+    property my_rule;
+      @(posedge clk) // Define the clock
+      (A == B);      // Define the rule
+    endproperty
+
+    // 2. Turn it on
+    // [label:] assert property (property_name) [pass] else [fail];
+
+    my_guard: assert property (my_rule) $display("Pass!"); else $error("Fail!");
+
+
+  Assertions - Method 2: Sequences and Timing Delays ( ## )
+
+  In Method 1, we only checked if a rule was true at one specific moment in time (like  A == B ). But in real hardware design, things don't
+  happen instantly. We need to measure time!
+
+  ### 1. What is a Sequence and a Timing Delay?
+
+  • Simple Explanation: A sequence is a timeline of events. Instead of just checking one variable, it checks a chain of events that happen
+  one after another. To measure the time between these events, we use the Timing Delay Operator ( ## ).
+  • Proper Definition: An SVA Sequence is a building block that expands Boolean expressions over more than one clock cycle. The  ##  operator
+  specifies a delay of n clock cycles between expressions.
+
+  ### 2. Why do we use it?
+
+  Hardware has strict timing rules. For example, if a CPU sends a  read_request  to memory, the memory might take exactly 3 clock cycles to
+  reply with  data_ready .
+  If  data_ready  arrives in 2 clock cycles, the CPU might crash! If it arrives in 4 clock cycles, it is too slow!
+  We use Sequences and Timing Delays to prove that the hardware waited the exact correct amount of time.
+
+  ### 3. How do we use it? (The Syntax)
+
+  The syntax uses the  ##  symbol, which simply means "Wait this many clock cycles."
+
+  •  ##1  means "wait 1 clock cycle" (check on the next clock edge).
+  •  ##5  means "wait 5 clock cycles".
+
+  Syntax structure:
+
+    // 1. Create a sequence timeline
+    sequence my_timeline;
+
+      // Read this as: "A must be 1, then WAIT 3 clock cycles, then B must be 1"
+      A ##3 B;
+
+    endsequence
+
+    // 2. Put the sequence inside a property with a clock
+    property my_timing_rule;
+      @(posedge clk) my_timeline;
+    endproperty
+
+### 2. "Why use  $time  in the display?"
+
+   $time  is just a built-in SystemVerilog stopwatch. It tells you the exact time in the simulation.
+  If you don't use  $time , the log just says: "ERROR: Timing rule broken!"
+  If you use  $time , the log says: "ERROR: Timing rule broken at 45ns!"
+  This makes it 100x easier for you to open the waveform and look exactly at 45ns to see what went wrong.
+
+  ### 3. "Why do we need a  sequence  block? Isn't  property  enough?"
+
+  You are 100% correct! You do not need a separate  sequence  block. You can write the timeline directly inside the property like this:
+
+    property my_timing_rule;
+      @(posedge clk) (req == 1) ##2 (ack == 1);
+    endproperty
+
+  So why do engineers use  sequence ? Because it acts like a reusable function. If you have a very complex timeline, you can put it inside a
+  sequence  block once, and then reuse it inside 10 different properties without typing it all over again. A "timeline of events" just means
+  "A happens, then wait a bit, then B happens".
+
+  ### 4. "What did you mean by the HUGE PROBLEM?"
+
+  Let's go back to the restaurant.
+  Imagine the restaurant manager comes up to your table every 5 seconds and yells at you: "Why didn't you get your pizza yet?!"
+  You would reply: "Because I haven't ordered yet (Req is 0)!!"
+
+  The assertion is exactly like that annoying manager. Because the assertion runs on every single clock tick, it does this:
+
+  • Clock 1: Is Req 1? No! -> FAIL ERROR!
+  • Clock 2: Is Req 1? No! -> FAIL ERROR!
+  • Clock 3: You finally make a Request (Req is 1). Wait 2 clocks. Ack is 1. -> PASS!
+
+  We don't want the assertion yelling at us when we haven't even made a request! We want to tell the assertion: "Do not start checking UNLESS
+  (IF) Req is 1."
+
+  This is why we desperately need the next topic: Implication Operators (If-Then statements).
+
+  ──────
+   Assertions - Method 3: Implication Operators ( |->  and  |=> )
+
+  ### 1. What is an Implication Operator?
+
+  • Simple Explanation: It is an If-Then statement built specifically for assertions.
+  • Proper Definition: An implication operator tells the assertion to only evaluate the right-hand side (Consequent) IF the left-hand side
+  (Antecedent) is true. If the left-hand side is false, the assertion simply ignores it and does not throw an error.
+
+  ### 2. Why do we use it?
+
+  To solve the exact bug you just found! Without it, an assertion will desperately try to test your rule on every single clock tick. If you
+  use an Implication Operator, it tells the assertion: "Go to sleep. Only wake up and check the rule IF the request goes high."
+
+  ### 3. How do we use it? (The Syntax)
+
+  There are two types of implication operators. This is a guaranteed interview question, so memorize the difference!
+
+  A) Overlapped Implication ( |-> )
+
+  • Rule: If the left side is true, check the right side on the SAME clock cycle.
+  • Syntax:  (A == 1) |-> (B == 1);  (If A is 1 right now, B must also be 1 right now).
+
+  B) Non-Overlapped Implication ( |=> )
+
+  • Rule: If the left side is true, check the right side on the NEXT clock cycle.
+  • Syntax:  (A == 1) |=> (B == 1);  (If A is 1 right now, B must be 1 on the next clock tick).
+
+  Here is the strict rule: You are NOT ALLOWED to put the  |->  symbol inside a  sequence  block!
+
+  If you try to write this code:
+
+    sequence req_ack_seq;
+      (req == 1) |-> ##2 (ack == 1); // SYNTAX ERROR!!
+    endsequence
+
+  The simulator will throw a strict Syntax Error and crash!
+
+  Why?
+
+  • A  sequence  is only allowed to hold time delays ( ## ).
+  • The  |->  symbol is an "If-Then" condition. In SystemVerilog, "If-Then" conditions are only allowed inside a  property .
+  Assertions - Method 4: Repetition Operators
+
+   Assertions - Method 4: Repetition Operators
+
+  ### 1. What is a Repetition Operator?
+
+  • Simple Explanation: It is a shortcut. Instead of writing  A ##1 A ##1 A  to check if  A  stays high for 3 clock cycles, you can just
+  write  A[*3] .
+  • Proper Definition: A repetition operator is used to specify that a signal or a sequence will match repeatedly for a specified number of
+  clock cycles.
+  • Why is it used? To make complex timing checks much easier to read and write.
+
+  ### 2. The Two Types You Must Know (Syntax & How they are used)
+
+  A) Consecutive Repetition ( [*n] )
+
+  • The Rule: The signal must be true for  n  clock cycles in a row. There cannot be any gaps!
+  • Syntax:  A[*3]
+  • Example: If A is  1, 1, 1 , it passes. If A is  1, 0, 1, 1 , it fails because there was a  0  interrupting it!
+
+  B) Go-To Repetition ( [->n] )
+
+  • The Rule: The signal must be true for  n  clock cycles, but gaps are allowed. It does not have to be in a row!
+  • Syntax:  A[->3]
+  • Example: If A is  1, 0, 0, 1, 0, 1 , it passes! The assertion just waits patiently until it counts three  1 s.
+  ──────
+
+
+
+  Assertions - Method 5:  disable iff
+
+  ### 1. What is it?
+
+  • Simple Explanation: It is a "Kill Switch" for your assertion. If the kill switch is pulled, the assertion immediately turns off, stops
+  checking, and ignores all errors.
+  • Proper Definition: The  disable iff  (if and only if) clause allows an evaluation of a concurrent assertion to be preempted (killed) if a
+  specified condition becomes true.
+
+  ### 2. Why do we use it?
+
+  For System Resets!
+  Imagine you have an assertion running that says: "If Request is 1, Acknowledge must be 1 in 2 clock cycles."
+  Suddenly, someone presses the physical  RESET  button on your chip. All signals are forced to  0 .
+  Because Acknowledge was forced to  0 , your assertion will scream FAIL!
+  But it's not a bug! The chip was just resetting! We use  disable iff (reset)  to tell the assertion: "Go to sleep and ignore all rules
+  while the chip is resetting."
+
+  ### 3. How do we use it? (Syntax)
+
+  You put it directly inside the property, before the rule starts.
+   disable iff (condition) rule;
+
+
+
+ ──────
+   Assertions - Method 6: Formal Arguments
+
+  ### 1. What is it?
+
+  • Simple Explanation: It allows you to pass variables into a  sequence  or  property , exactly the same way you pass variables into a
+  function  or a  task !
+  • Proper Definition: Formal arguments allow you to create parameterized sequences and properties. Instead of hard-coding specific signal
+  names, you use generic placeholders, and pass the actual signals in when you call the property.
+
+  ### 2. Why do we use it? (The Reusability Secret)
+
+  Imagine you are designing a massive CPU. It has 3 different memory banks, which means it has 3 sets of Request/Acknowledge signals:
+
+  1.  req_A  and  ack_A
+  2.  req_B  and  ack_B
+  3.  req_C  and  ack_C
+
+  Without formal arguments, you would have to type out three completely separate sequences and properties, wasting time and making your code
+  bloated!
+  With formal arguments, you write ONE generic sequence, and you just pass the different signals into it like a function.
+
+  ### 3. How do we use it? (The Syntax)
+
+  You add parentheses  ()  after the sequence or property name, and define the generic argument names inside them.
+
+    // 'req_sig' and 'ack_sig' are just generic placeholders!
+    sequence generic_seq (req_sig, ack_sig);
+      (req_sig == 1) |-> ##2 (ack_sig == 1);
+    endsequence
+    ──────
+
+
+
+  Assertions - Method 7: Variable Delays
+
+  ### 1. What is it?
+
+  • Simple Explanation: Instead of hard-coding a strict number like  ##2  (always wait 2 clocks), you use a variable like  ##my_delay  so the
+  delay can change while the simulation is running!
+  • Proper Definition: It is the ability to use a variable or formal argument inside the timing delay operator ( ## ) to create dynamic,
+  flexible timing checks.
+
+  ### 2. Why do we use it?
+
+  Not all hardware has a fixed timing rule!
+  Imagine a Memory Chip that has two modes:
+
+  1. Fast Mode: It replies in 2 clock cycles.
+  2. Slow Mode: It replies in 5 clock cycles.
+
+  If we hardcode  ##2 , the assertion will falsely crash when the memory is in Slow Mode.
+  Instead, we pass a variable  delay_time  into the assertion. If the memory is in Fast Mode, we set  delay_time = 2 . If it is in Slow Mode,
+  we set  delay_time = 5 . One assertion handles both modes perfectly!
+
+  ### 3. How do we use it? (The Syntax)
+
+  We combine it with Formal Arguments (Method 6) to pass the delay number into the property!
+
+    // We create a formal argument 'delay_val'
+    property dynamic_timing (req, ack, delay_val);
+      @(posedge clk)
+
+      // We put the variable directly after the ## symbol!
+      (req == 1) |-> ##delay_val (ack == 1);
+
+    endproperty
+
+
+
+ ### Answering your 4 Questions:
+
+  1. "Why the  1  in first?"
+  In SystemVerilog, you cannot just do math in an assertion. You must check a condition first.  1  is just the boolean value for TRUE. By
+  writing  (1, count = count - 1) , we are saying: "Condition is True, so do the math!" It is just a dummy placeholder.
+  2. "What does  [*1:$]  represent?"
+  This is the engine! It means "Repeat the previous step from 1 to Infinity ( $ ) times, advancing one clock tick every time." This is what
+  forces the math to be slow! It can only subtract once per clock cycle.
+  3. "What is  first_match ?"
+  It is the Emergency Brake. Because  [*1:$]  says "Repeat to Infinity", the simulator would keep subtracting forever and crash.  first_match
+  tells the simulator: "The exact millisecond the condition is met, smash the brakes, stop the loop, and move on!"
+  ──────
+  ### Timeline 1: How Delay = 2 actually takes 2 clock cycles
+
+  Let's pretend we are the simulator. We pass in  memory_delay = 2 .
+
+  • Clock 0 (The Start):  req = 1 . We copy the delay into the bucket:  count = 2 .
+  • Clock 1: The  [*1:$]  loop runs for the first time.
+      • We subtract 1.  count  is now  1 .
+      • Is  count <= 0 ? No! (1 is not 0).
+      • Result: We must wait for the next clock.
+  • Clock 2: The  [*1:$]  loop runs for the second time.
+      • We subtract 1.  count  is now  0 .
+      • Is  count <= 0 ? YES! (0 is 0).
+      • Result: The  first_match  keyword smashes the emergency brakes! The loop stops. We immediately check if  ack == 1 .
+  • Conclusion: It took exactly 2 clock cycles for the math to reach 0!
+  ──────
+  ### Timeline 2: How Delay = 5 takes 5 clock cycles
+
+  Now we pass in  memory_delay = 5 .
+
+  • Clock 0 (The Start):  req = 1 . We copy the delay into the bucket:  count = 5 .
+  • Clock 1: We subtract 1.  count  = 4. (Not zero, keep waiting).
+  • Clock 2: We subtract 1.  count  = 3. (Not zero, keep waiting).
+  • Clock 3: We subtract 1.  count  = 2. (Not zero, keep waiting).
+  • Clock 4: We subtract 1.  count  = 1. (Not zero, keep waiting).
+  • Clock 5: We subtract 1.  count  = 0. YES!  first_match  stops the loop. We check  ack == 1 .
+  • Conclusion: Because we started with a bigger number, the simulator was forced to wait for 5 clock ticks before the math reached 0!
+
+  This is how the subtraction dynamically creates the delay! The bigger the number you pour into the bucket, the more clock cycles the
+  simulator is forced to wait before it reaches zero!
+
+
+──────
+  ### Missed Topic 1: Sequence with a logical expression
+
+  Up until now, our sequences have mostly looked at one signal at a time (like  req == 1 ). But what if a rule requires two signals to be
+  checked on the exact same clock cycle?
+
+  • What is it? It is using boolean logic (like  &&  or  || ) inside a sequence.
+  • The Rule: Both signals must be checked at the exact same moment.
+
+  Syntax:
+
+    sequence seq_logical;
+      (req && enable); // Both must be 1 on the exact same clock edge!
+    endsequence
+
+  If  req  is 1, but  enable  is 0, this sequence will fail instantly.
+  ──────
+  ### Missed Topic 2: Multiple sequences
+
+  In your previous code, you wrote the sequence on the left side, and the property on the right side. But the textbook allows you to define
+  two separate sequences and chain them together inside the property!
+
+  • What is it? Combining two different sequences using the implication operator ( |-> ).
+  • Why use it? It makes your code much cleaner if you have very long rules.
+
+  Syntax:
+
+    // Sequence A (The Trigger)
+    sequence seqA;
+      (req && enable); // (This is our logical expression from Topic 1!)
+    endsequence
+
+    // Sequence B (The Check)
+    sequence seqB;
+      ##5 (ack == 1);
+    endsequence
+
+    // We chain them together here!
+    property multiple_seq_prop;
+      @(posedge clk)
+      seqA |-> seqB; // "If Sequence A is true |-> check Sequence B"
+    endproperty
+
+  Inch-by-Inch Explanation:
+
+  1. The assertion waits for the clock edge.
+  2. It checks  seqA . (Are  req  and  enable  BOTH high right now?)
+  3. If yes, the  |->  triggers!
+  4. It moves to  seqB , waits exactly 5 clock cycles, and checks if  ack  is 1.
+
+
+
+ ──────
+  ### Missed Topic 3: Timing Windows ( ##[min:max] )
+
+  So far, we have only used Fixed Delays (like  ##3 ). If we write  ##3 ack , the assertion demands that the  ack  arrives on the exact 3rd
+  clock cycle. If it arrives on cycle 2 or cycle 4, it fails!
+
+  But in the real world, hardware is sometimes unpredictable. A memory chip might take anywhere from 1 to 3 clock cycles to reply. If we use
+  ##3 , the assertion will falsely fail if the memory replies quickly on cycle 1!
+
+  To fix this, we use a Timing Window (a range of time).
+
+  Your syllabus defines 3 specific types of Timing Windows:
+
+  #### 1. Standard Timing Window ( ##[1:3] )
+
+  • What it means: The signal can arrive on clock cycle 1, OR cycle 2, OR cycle 3.
+  • Syntax:
+
+    property p_window;
+      @(posedge clk) (req == 1) |-> ##[1:3] (ack == 1);
+    endproperty
+
+  • Inch-by-Inch: When  req  is 1, a timer starts. If  ack  is 1 on the next clock, it PASSES. If not, it waits. If  ack  is 1 on the 2nd
+  clock, it PASSES. If not, it waits. If  ack  is 1 on the 3rd clock, it PASSES. If  ack  is still 0 after the 3rd clock, it finally FAILS.
+
+  #### 2. Overlapping Timing Window ( ##[0:3] )
+
+  • What it means: The zero ( 0 ) means the signal is allowed to happen on the exact same clock cycle that the request was made, OR any time
+  up to cycle 3.
+  • Syntax:
+
+    property p_overlap_window;
+      @(posedge clk) (req == 1) |-> ##[0:3] (ack == 1);
+    endproperty
+
+  • Inch-by-Inch: When  req  is 1, it checks  ack  immediately on that exact same clock edge ( ##0 ). If  ack  is 1, it PASSES instantly. If
+  not, it keeps checking on cycle 1, 2, and 3.
+
+  #### 3. Indefinite Timing Window ( ##[1:$] )
+
+  • What it means: The  $  symbol means Infinity (End of simulation). It is called the "eventuality" operator.
+  • Syntax:
+
+    property p_indefinite;
+      @(posedge clk) (req == 1) |-> ##[1:$] (ack == 1);
+    endproperty
+
+  • Inch-by-Inch: When  req  is 1, it waits for  ack  to become 1. It will wait forever. It will check cycle 1, cycle 2, cycle 100, cycle 10,
+  000. It will never throw a FAIL unless the entire simulation ends ( $finish ) and  ack  never arrived!
+  ──────
+  Summary:
+
+  •  ##3  = Must happen exactly on 3.
+  •  ##[1:3]  = Can happen on 1, 2, or 3.
+  •  ##[0:3]  = Can happen right now (0), 1, 2, or 3.
+  •  ##[1:$]  = Can happen anytime between now and the end of the universe!
+
+
+ ──────
+  ### Missed Topic 4: Non-consecutive Repetition ( [=n] )
+
+  To understand this, we must quickly look at the three brothers of Repetition:
+
+  1. The Strict Brother ( [*3]  Consecutive):  b  MUST be high for 3 clocks perfectly in a row. No gaps allowed!
+  2. The Middle Brother ( [->3]  Go-To):  b  must be high 3 times (gaps allowed). BUT, the exact moment the 3rd  b  arrives, you must
+  immediately jump to the next rule!
+  3. The Chill Brother ( [=3]  Non-consecutive):  b  must be high 3 times (gaps allowed). AND, after the 3rd  b  arrives, you can just wait
+  around and relax until the next rule happens!
+
+  ### The Difference between  [->3]  and  [=3]
+
+  Let's look at a rule where  c  must happen after 3  b s:
+
+  Rule 1: Go-To ( [->3] )
+
+    property goto_prop;
+      @(posedge clk) (a == 1) |-> b[->3] ##1 c;
+    endproperty
+
+  • The Timeline:  b  happens once. We wait.  b  happens twice. We wait.  b  happens a third time!
+  • The Check: Because we used  [->3] , the simulator demands that  c  is high on the very next clock cycle ( ##1 ). If  c  waits 5 clocks to
+  arrive, the assertion FAILS!
+
+  Rule 2: Non-consecutive ( [=3] )
+
+    property noncon_prop;
+      @(posedge clk) (a == 1) |-> b[=3] ##1 c;
+    endproperty
+
+  • The Timeline:  b  happens once. We wait.  b  happens twice. We wait.  b  happens a third time!
+  • The Check: Because we used  [=3] , the simulator says: "We found our 3 b's! I don't care when  c  happens.  c  can happen on the next
+  clock, or  c  can wait 20 clocks to arrive!"
+  • As long as  c  eventually arrives (and no more  b s happen in between), the assertion PASSES!
+
+  ### Summary:
+
+  • Use  [->3]  if the next event must happen immediately after the 3rd match.
+  • Use  [=3]  if the next event can happen anytime after the 3rd match.
+
+
+
+  #### 1.  $rose(signal)
+
+  • What it does: It checks if the signal just transitioned from  0  to  1 .
+  • The Rule: It returns TRUE only if the signal was  0  on the previous clock cycle, and is  1  on the current clock cycle.
+  • Example:
+
+    property p_rose;
+      @(posedge clk) $rose(req);
+    endproperty
+
+  (If  req  was 1 on the last clock, and is still 1 on this clock,  $rose  is FALSE because it didn't just "rise" right now!)
+
+  #### 2.  $fell(signal)
+
+  • What it does: It checks if the signal just transitioned from  1  to  0  (falling edge).
+  • The Rule: It returns TRUE only if the signal was  1  on the previous clock cycle, and is  0  on the current clock cycle.
+  • Example:
+
+    property p_fell;
+      // If req goes high, ack MUST fall to 0!
+      @(posedge clk) (req == 1) |-> $fell(ack);
+    endproperty
+
+  #### 3.  $stable(signal)
+
+  • What it does: It checks if the signal stayed the exact same!
+  • The Rule: It returns TRUE only if the signal has the exact same value ( 0  or  1 ) as it did on the previous clock cycle. No transitions
+  allowed!
+  • Example:
+
+    property p_stable;
+      // If enable is 0, the data signal is NOT allowed to change!
+      @(posedge clk) (enable == 0) |-> $stable(data);
+    endproperty
+
+  This is heavily used in memory designs to make sure data isn't accidentally overwritten when the chip is turned off!
+
+
+
+ ### Family 2: Time Travel ( $past )
+
+  Normally, assertions are always looking into the future (using  ##2 ). But what if you want to look into the past?
+
+  #### 4.  $past(signal, number_of_clocks)
+
+  • What it does: It provides the exact value that a signal had a specific number of clock cycles ago.
+  • Syntax:
+
+    property p_past;
+      // "If Ack is 1 right now, then 2 clocks ago, Req MUST have been 1!"
+      @(posedge clk) (ack == 1) |-> ($past(req, 2) == 1);
+    endproperty
+
+  ### Why is this useful?
+
+  It is just a different way of writing rules!
+  Instead of standing at the  req  signal and looking into the future to see if  ack  happens, we can stand at the  ack  signal and look into
+  the past to make sure  req  actually happened! It is incredibly useful for finding bugs in very messy pipelines.
+
+
+  ### Family 3: The Vector Checks
+
+  Up until now, we have mostly checked single bit wires (like  bit req ). But what if you have a 5-bit bus ( logic [4:0] state )? These 4
+  methods are specifically built to check multi-bit vectors!
+
+  #### 5.  $onehot(bus)
+
+  • What it does: It checks that exactly one bit in the vector is high ( 1 ), and all other bits are  0 .
+  • Example:  5'b00100  will PASS.  5'b01100  will FAIL (two bits are high).  5'b00000  will FAIL (zero bits are high).
+  • Syntax:
+
+    property p_onehot;
+      // Make sure the state machine is always one-hot!
+      @(posedge clk) $onehot(state);
+    endproperty
+
+  #### 6.  $onehot0(bus)
+
+  • What it does: It is exactly the same as above, but it also allows all zeros. It stands for "One-Hot or Zero".
+  • Example:  5'b00100  will PASS.  5'b00000  will ALSO PASS!  5'b11000  will FAIL.
+
+  #### 7.  $isunknown(bus)
+
+  • What it does: It checks if any bit inside the vector accidentally became  X  (Unknown) or  Z  (High-Impedance). This is a lifesaver for
+  finding uninitialized memory bugs!
+  • Example:  5'b01000  will return FALSE (No unknowns).  5'b01X00  will return TRUE (It found an X!).
+  • Syntax:
+
+    property p_unknown;
+      // If the bus has an X or Z, throw an error!
+      @(posedge clk) $isunknown(bus) |-> 0; // Force it to fail if true
+    endproperty
+
+  #### 8.  $countones(bus)
+
+  • What it does: Instead of returning TRUE or FALSE, it returns an integer counting exactly how many  1 s are in the vector!
+  • Syntax:
+
+    property p_count;
+      // Make sure there are strictly more than 2 bits high!
+      @(posedge clk) ($countones(bus) > 2);
+    endproperty
+    ──────
+
+
+  ### Missed Topic 6: The  .ended  Construct
+
+  Up until now, we have used the implication operator ( |-> ) to connect sequences. When we write  seq_1 |-> seq_2 , the simulator says: "If
+  seq_1  is true, then start checking  seq_2 ."
+
+  But what if you have a massive, complicated sequence that takes 10 clock cycles to finish, and you want to use the exact finishing moment
+  as a trigger?
+
+  #### What is  .ended ?
+
+  The  .ended  keyword is attached to the name of a sequence. It acts as a synchronization point. It returns TRUE on the exact clock cycle
+  that the sequence successfully finishes.
+
+  #### Syntax & Example:
+
+    sequence seq_1;
+      @(posedge clk) d;
+    endsequence
+
+    sequence seq_2;
+      @(posedge clk) ##4 k; // Wait 4 clocks, then check k
+    endsequence
+
+    // Using the .ended keyword!
+    property p_ended;
+      @(posedge clk)
+      seq_1.ended |-> ##4 seq_2.ended;
+    endproperty
+
+  ### Why do we use it? (The Synchronization Secret)
+
+  Let's look at the difference between using  .ended  and NOT using  .ended :
+
+  Without  .ended :  seq_1 |-> ##4 seq_2
+
+  • If  d  is high,  seq_1  is true.
+  • The simulator waits 4 clock cycles ( ##4 ).
+  • Then it STARTS  seq_2 .
+  • Because  seq_2  has another  ##4  inside it, the simulator waits another 4 clock cycles, and finally checks  k !
+  • Total Time Taken: 9 clock cycles!
+
+  With  .ended :  seq_1.ended |-> ##4 seq_2.ended
+
+  • If  d  is high,  seq_1  finishes (because it's only 1 clock long).  seq_1.ended  is now TRUE.
+  • Because  seq_2  takes 4 clocks to run, and we just waited 4 clocks, the simulator looks at  k  immediately!
+  • The simulator waits 4 clock cycles ( ##4 ).
+  • Instead of starting  seq_2  from the beginning, the simulator demands that  seq_2  must FINISH exactly right now!
+  • Total Time Taken: 5 clock cycles!
+
+
+
+
