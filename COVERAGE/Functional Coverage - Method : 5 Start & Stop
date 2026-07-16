@@ -1,0 +1,72 @@
+  class ex;
+      bit clk;
+      rand bit[3:0] data;
+      bit reset;
+
+      covergroup cg @(posedge clk);
+        
+        option.per_instance = 1;
+        c1 : coverpoint data;
+      endgroup
+
+      function new();
+        cg = new();
+      endfunction
+    endclass
+
+    module example;
+      
+      ex pkt = new();
+
+      bit clk; // 1. Added clk declaration!
+      always #5 clk = ~clk;
+      
+      always @(clk) begin
+        pkt.clk = clk;
+      end
+
+      
+      initial begin
+
+        // --- RESET PHASE ---
+        pkt.reset = 1;
+        pkt.cg.stop();
+
+        // Wait for 2 clock cycles so time moves forward!
+        repeat(2) @(posedge clk);
+
+        // --- MAIN TEST PHASE ---
+        pkt.reset = 0;
+        pkt.cg.start();
+
+        repeat (10) begin
+
+          // WAIT FOR THE CLOCK BEFORE DOING WORK!
+          @(posedge clk);
+
+          if(pkt.randomize() == 1) begin
+
+          //  pkt.cg.sample();
+            $display("TIME = %0t | DATA = %0d | TOTAL COVERAGE = %.2f%%",
+                     $time, pkt.data, pkt.cg.get_inst_coverage());
+
+          end
+        end
+
+        $finish;
+      end
+    endmodule
+
+/* output 
+
+# run -all
+# TIME = 25 | DATA = 5 | TOTAL COVERAGE = 6.25%
+# TIME = 35 | DATA = 0 | TOTAL COVERAGE = 12.50%
+# TIME = 45 | DATA = 10 | TOTAL COVERAGE = 12.50%
+# TIME = 55 | DATA = 5 | TOTAL COVERAGE = 18.75%
+# TIME = 65 | DATA = 4 | TOTAL COVERAGE = 18.75%
+# TIME = 75 | DATA = 6 | TOTAL COVERAGE = 25.00%
+# TIME = 85 | DATA = 11 | TOTAL COVERAGE = 31.25%
+# TIME = 95 | DATA = 0 | TOTAL COVERAGE = 37.50%
+# TIME = 105 | DATA = 15 | TOTAL COVERAGE = 37.50%
+# TIME = 115 | DATA = 2 | TOTAL COVERAGE = 43.75% */
