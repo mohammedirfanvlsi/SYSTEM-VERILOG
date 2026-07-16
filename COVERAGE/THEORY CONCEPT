@@ -187,3 +187,61 @@
   • With this line: You are being more strict. If the number drops into the bin 1 time, the simulator says "Not good enough, that's only 33% covered." If
   it hits 2 times, it says "66% covered." It will not check the box and say "100% Covered" until that specific number drops into the bin 3 times. It is
   used when you want to heavily stress-test a specific value multiple times.
+
+
+
+
+
+
+  ──────
+  ### Remaining Topic 1:  start()  and  stop()
+  We will start with the first missing topic, which is incredibly useful for real-world testing.
+
+  #### 1. What is it?
+
+  They are built-in functions that allow you to dynamically pause and resume a covergroup while the simulation is running.
+
+  #### 2. Why do we use it?
+
+  Imagine your chip has a "Reset Phase" that lasts for the first 100 clock cycles. During reset, random garbage data might be flying around
+  the wires. You do not want the covergroup to track this garbage data, because it will ruin your coverage report!
+
+  To fix this, you can  .stop()  the covergroup at the beginning of the simulation, and  .start()  it only after the reset phase is over and
+  the real test begins.
+
+
+
+
+  ### Remaining Topics 2, 3, & 4: Advanced Coverpoints
+
+  Normally, you just write  coverpoint data;  to track a single variable. But what if you want to track something more complicated?
+
+  #### 2. Coverpoints using an Expression (Math)
+
+  You don't have to track just a variable. You can track the result of an equation!
+
+    covergroup cg @(posedge clk);
+      // This tracks the result of A + B, not the individual variables!
+      c_math: coverpoint (A + B);
+    endgroup
+
+  #### 3. Coverpoints using a Function Return Value
+
+  You can track the output of a function!
+
+    covergroup cg @(posedge clk);
+      // This tracks whatever number the function returns!
+      c_func: coverpoint my_calculate_function(data);
+    endgroup
+
+  #### 4. Coverpoints using a Part Select
+
+  If you have a massive 32-bit variable, but you only care about the bottom 4 bits, you can use Part Select (brackets) to only track those
+  bits!
+
+    bit [31:0] massive_bus;
+
+    covergroup cg @(posedge clk);
+      // This ONLY tracks bits 0, 1, 2, and 3. It ignores the rest of the bus!
+      c_part: coverpoint massive_bus[3:0];
+    endgroup
