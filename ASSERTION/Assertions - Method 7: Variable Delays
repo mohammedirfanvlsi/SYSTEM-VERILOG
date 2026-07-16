@@ -1,0 +1,77 @@
+ module ex;
+
+      bit clk ;
+      bit req ;
+      bit ack ;
+
+      // A totally flexible, dynamic integer! NOT a parameter!
+      longint memory_delay;
+
+      always #5 clk = ~clk;
+
+      // --- THE TRUE DYNAMIC TIMER (ADVANCED WORKAROUND) ---
+      property variable_delay(r, a, d);
+
+        // We create a local variable to act as a countdown stopwatch
+        longint count;
+
+        @(posedge clk)
+        // 1. When req is 1, copy the dynamic delay 'd' into the 'count' stopwatch
+        (r == 1, count = d) |->
+
+          // 2. Loop on every clock tick, subtracting 1 from count.
+          //    The 'first_match' waits patiently until count hits 0.
+          first_match( (1, count = count - 1)[*1:$] ##0 (count <= 0) )
+
+          // 3. The exact moment the stopwatch hits 0, check if ack is 1!
+          |-> (a == 1);
+
+      endproperty
+
+      variable : assert property (variable_delay(req, ack, memory_delay))
+        $display("[%0t] PASS : THE ACK ARRIVED IN EXACTLY %0d CLOCKS", $time, memory_delay);
+      else
+        $error("[%0t] FAIL : THE ACK IS FAILED", $time);
+
+      initial begin
+        req = 0; ack = 0;
+        @(posedge clk);
+
+        // --- TEST 1: DELAY IS 2 ---
+        $display("--- Starting Test for Delay = 2 ---");
+        memory_delay = 2; // Flexible!
+
+        req = 1;
+        repeat(1) @(posedge clk);
+        ack = 1;req = 0;
+        
+        
+
+        @(posedge clk);
+        ack = 0;
+        @(posedge clk);
+
+        // --- TEST 2: DELAY IS 5 ---
+        $display("--- Starting Test for Delay = 1000 ---");
+        memory_delay = 1000; // Flexible!
+
+        req = 1;
+        repeat(999) @(posedge clk);
+        ack = 1;
+        req = 0;
+
+        repeat(2) @(posedge clk);
+
+        $finish;
+      end
+    endmodule
+        
+  /* OUTPUT 
+  
+  --- Starting Test for Delay = 2 ---
+[25] PASS : THE ACK ARRIVED IN EXACTLY 2 CLOCKS
+--- Starting Test for Delay = 1000 ---
+      variable : assert property (variable_delay(req, ack, memory_delay))
+             |
+xmsim: *W,MEMHOG (./testbench.sv,34|13): Assertion ex.variable requires increasing memory over time.
+[10035] PASS : THE ACK ARRIVED IN EXACTLY 1000 CLOCKS */
