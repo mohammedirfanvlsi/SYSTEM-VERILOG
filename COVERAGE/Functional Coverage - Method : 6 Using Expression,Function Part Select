@@ -1,0 +1,116 @@
+class my_test;
+      bit clk;
+      rand bit [31:0] A;
+      rand bit [31:0] B;
+      bit reset;
+
+      // A simple function to demonstrate Function Return coverage
+      function bit [31:0] get_sum(bit [31:0] val1, bit [31:0] val2);
+        return val1 + val2;
+      endfunction
+
+      covergroup cg @(posedge clk);
+        option.per_instance = 1;
+
+        // ----------------------------------------------------
+        // 1. Coverpoint using an EXPRESSION (Math)
+        // Tracks the math result of A + B, not the variables!
+        // ----------------------------------------------------
+        c_expr: coverpoint (A + B) {
+          bins low_sum = {[0:50]};
+        }
+
+        // ----------------------------------------------------
+        // 2. Coverpoint using a FUNCTION RETURN VALUE
+        // Tracks whatever number the 'get_sum' function spits out!
+        // ----------------------------------------------------
+        c_func: coverpoint get_sum(A, B) {
+          bins high_sum = {[51:100]};
+        }
+
+        // ----------------------------------------------------
+        // 3. Coverpoint using PART SELECT
+        // Even though A is 32-bits, this ONLY tracks the bottom 4 bits (0 to 15)!
+        // ----------------------------------------------------
+        c_part: coverpoint A[3:0];
+
+      endgroup
+
+      function new();
+        cg = new();
+      endfunction
+    endclass
+
+    module testbench;
+      
+       my_test pkt = new();
+
+      bit clk;
+      always #5 clk = ~clk;
+      
+      always@(clk)begin
+        
+        pkt.clk = clk;
+      end
+
+      initial begin
+       
+        // ==========================================
+        // THE RESET PHASE (Testing stop/start)
+        // ==========================================
+        pkt.reset = 1;
+        pkt.cg.stop(); // Turn OFF coverage during reset
+
+        repeat(2) @(posedge clk); // Allow time to pass
+
+        // ==========================================
+        // THE MAIN TEST PHASE
+        // ==========================================
+        pkt.reset = 0;
+        pkt.cg.start(); // Turn ON coverage!
+
+        repeat(20) begin
+          @(posedge clk);
+
+          if(pkt.randomize() == 1) begin
+            // Keep the random numbers small just so it's easy to read
+            pkt.A = pkt.A % 50;
+            pkt.B = pkt.B % 50;
+
+            
+$display("TIME = %0t | A = %0d, B = %0d | A+B = %0d | get_sum() = %0d | COVERAGE = %.2f%%",
+             $time,
+             pkt.A,
+             pkt.B,
+             (pkt.A + pkt.B),               // <--- Prints the expression math!
+             pkt.get_sum(pkt.A, pkt.B),     // <--- Prints the function output!
+             pkt.cg.get_inst_coverage());
+          end
+        end
+
+        $finish;
+      end
+    endmodule
+
+/* OUTPUT 
+
+# TIME = 25 | A = 49, B = 5 | A+B = 54 | get_sum() = 54 | COVERAGE = 35.42%
+# TIME = 35 | A = 37, B = 43 | A+B = 80 | get_sum() = 80 | COVERAGE = 70.83%
+# TIME = 45 | A = 10, B = 39 | A+B = 49 | get_sum() = 49 | COVERAGE = 72.92%
+# TIME = 55 | A = 39, B = 5 | A+B = 44 | get_sum() = 44 | COVERAGE = 75.00%
+# TIME = 65 | A = 16, B = 9 | A+B = 25 | get_sum() = 25 | COVERAGE = 77.08%
+# TIME = 75 | A = 7, B = 20 | A+B = 27 | get_sum() = 27 | COVERAGE = 77.08%
+# TIME = 85 | A = 7, B = 22 | A+B = 29 | get_sum() = 29 | COVERAGE = 77.08%
+# TIME = 95 | A = 26, B = 4 | A+B = 30 | get_sum() = 30 | COVERAGE = 77.08%
+# TIME = 105 | A = 9, B = 2 | A+B = 11 | get_sum() = 11 | COVERAGE = 77.08%
+# TIME = 115 | A = 8, B = 19 | A+B = 27 | get_sum() = 27 | COVERAGE = 79.17%
+# TIME = 125 | A = 28, B = 44 | A+B = 72 | get_sum() = 72 | COVERAGE = 81.25%
+# TIME = 135 | A = 45, B = 26 | A+B = 71 | get_sum() = 71 | COVERAGE = 83.33%
+# TIME = 145 | A = 35, B = 31 | A+B = 66 | get_sum() = 66 | COVERAGE = 85.42%
+# TIME = 155 | A = 35, B = 29 | A+B = 64 | get_sum() = 64 | COVERAGE = 87.50%
+# TIME = 165 | A = 12, B = 10 | A+B = 22 | get_sum() = 22 | COVERAGE = 87.50%
+# TIME = 175 | A = 1, B = 47 | A+B = 48 | get_sum() = 48 | COVERAGE = 87.50%
+# TIME = 185 | A = 15, B = 43 | A+B = 58 | get_sum() = 58 | COVERAGE = 87.50%
+# TIME = 195 | A = 15, B = 15 | A+B = 30 | get_sum() = 30 | COVERAGE = 89.58%
+# TIME = 205 | A = 8, B = 29 | A+B = 37 | get_sum() = 37 | COVERAGE = 89.58%
+# TIME = 215 | A = 39, B = 7 | A+B = 46 | get_sum() = 46 | COVERAGE = 89.58% */
