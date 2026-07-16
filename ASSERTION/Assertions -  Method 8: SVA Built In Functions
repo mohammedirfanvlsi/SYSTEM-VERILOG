@@ -1,0 +1,115 @@
+module method_8_finale;
+
+      bit clk;
+      bit req;
+      bit enable;
+      bit ack;
+      bit c_sig;
+      logic [3:0] state; // 4-bit bus for $onehot
+
+      always #5 clk = ~clk;
+
+      // ====================================================
+      // TOPIC 1 & 2: LOGICAL EXPRESSION & MULTIPLE SEQUENCES
+      // ====================================================
+
+      // Sequence A (Logical Expression: Both must be high)
+      sequence seqA;
+        (req && enable);
+      endsequence
+
+      // Sequence B
+      sequence seqB;
+        ##2 ack;
+      endsequence
+
+      // ====================================================
+      // TOPIC 6: THE .ended CONSTRUCT
+      // ====================================================
+      property p_ended;
+        @(posedge clk)
+        // Chaining multiple sequences using the .ended synchronization point
+        seqA.ended |-> ##2 seqB.ended;
+      endproperty
+
+      // ====================================================
+      // TOPIC 3: TIMING WINDOWS (##[1:3])
+      // ====================================================
+      property p_window;
+        @(posedge clk)
+        // Ack can arrive on clock 1, 2, OR 3!
+        (req == 1) |-> ##[1:3] (ack == 1);
+      endproperty
+
+      // ====================================================
+      // TOPIC 4: NON-CONSECUTIVE REPETITION ([=3])
+      // ====================================================
+      property p_nonconsecutive;
+        @(posedge clk)
+        // Ack must happen 3 times. We don't care when c_sig happens afterwards!
+        (req == 1) |-> (ack == 1)[=3] ##1 (c_sig == 1);
+      endproperty
+
+      // ====================================================
+      // TOPIC 5: BUILT-IN METHODS ($rose, $fell, $stable, $onehot, $past)
+      // ====================================================
+      property p_built_in;
+        @(posedge clk)
+        // If 'req' just changed from 0 to 1...
+        $rose(req) |->
+          // State must be exactly one-hot AND enable must not change!
+          $onehot(state) and $stable(enable);
+      endproperty
+
+      property p_past;
+        @(posedge clk)
+        // If 'ack' just changed from 1 to 0...
+        $fell(ack) |->
+          // Look back in time! 2 clocks ago, req MUST have been 1!
+        ($past(req, 3) == 1);
+      endproperty
+
+
+      // ====================================================
+      // TURN ON THE GUARDS!
+      // ====================================================
+      c_ended    : assert property (p_ended);
+      c_window   : assert property (p_window);
+      c_noncon   : assert property (p_nonconsecutive);
+      c_builtin  : assert property (p_built_in);
+      c_pastcheck: assert property (p_past);
+
+      // ====================================================
+      // TEST STIMULUS (Just to compile and run)
+      // ====================================================
+   
+      initial begin
+        req = 0; enable = 1; ack = 0; c_sig = 0; state = 4'b0000;
+        @(posedge clk); // 5ns
+
+        // --- Trigger the Built-in method ---
+        req = 1;
+        // Notice: I didn't touch 'enable'. It stays 1 so it is STABLE!
+        state = 4'b0100; // Exactly one bit is high ($onehot passes)
+
+        @(posedge clk); // 15ns: Built-in PASSES!
+        req = 0;
+
+        // --- Trigger the Past Check ---
+        // Wait for the next clock (25ns)
+        @(posedge clk);
+        ack = 1;
+
+        @(posedge clk); // 35ns
+        ack = 0; // ack falls to 0!
+        // At 35ns, $past(req, 2) looks back to 15ns. req was 1 at 15ns! PASSES!
+
+        repeat(3) @(posedge clk);
+        $display("[%0t] SIMULATION FINISHED! NO ERRORS!", $time);
+        $finish;
+      end
+   endmodule
+        
+ /* OUTPUT 
+ 
+ # [65] SIMULATION FINISHED! NO ERRORS! */
